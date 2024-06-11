@@ -4,12 +4,13 @@ import statsmodels.stats.stattools as st
 from scipy.stats import norm
 
 
-def latexTable(results1,results2,r,n,):
+def toLatexTable(results1,results2,r,n,):
     '''
     This method prints latex code for a table with the results
-    
+
     '''
     # Print results to latex tables
+    print("TABLE 1 - ")
     print(results1.to_latex(float_format="{:.3f}".format, multicolumn_format='c'))
     print(results2.to_latex(float_format="{:.3f}".format, multicolumn_format='c'))
     print('r = ' +str(r)+' , n = '+str(n))

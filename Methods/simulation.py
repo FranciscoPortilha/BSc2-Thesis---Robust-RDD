@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
-from sample import genSample
-from rrdd import fitRD
+from methods.sample import genSample
+from methods.rrdd import fitRD
 
 
 def simulation(r,nameSample,n,tau=0,  alpha=0, beta=0, L=0, cutoff=0,b=1, outlier=False, outlierMethod='', nOutliers=0):

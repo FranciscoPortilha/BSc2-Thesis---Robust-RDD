@@ -81,7 +81,7 @@ def genT(X):
     T = np.delete(T,0)
     return T
             
-def mu_noak(L,x):
+def mu_noack(L,x):
     """
     This function generates the non-random part of outcome function with the DGP used by Noack and Rothe (NR) (2023).
 
@@ -99,7 +99,7 @@ def mu_noak(L,x):
     """
     return sign(x)*np.power(x,2) - L*sign(x)*(np.power(x-0.1*sign(x),2)-np.power(0.1,2)*sign(x))*indicator(x)
 
-def genY_noak(L,X,epsilon):
+def genY_noack(L,X,epsilon):
     """
     This function generates a sample of outcomes (Y_i's) with the DGP used by Noack and Rothe (NR) (2023).
 
@@ -119,7 +119,7 @@ def genY_noak(L,X,epsilon):
     """
     Y = {}
     for i in range(len(X)):
-        Y = np.append(Y,mu_noak(L,X[i]) + epsilon[i])
+        Y = np.append(Y,mu_noack(L,X[i]) + epsilon[i])
     Y = np.delete(Y,0)
     return Y
 
@@ -199,7 +199,7 @@ def genY(name, X, tau=0, L=0, alpha=0, beta=0):
     """
     epsilon = np.random.normal(0,0.5,len(X))
     if name == 'Noack':
-        Y = genY_noak(L,X,epsilon)
+        Y = genY_noack(L,X,epsilon)
     elif name == 'Basic Linear':
         Y = genY_basicLinear(tau,alpha,beta,X,epsilon)
     else:
