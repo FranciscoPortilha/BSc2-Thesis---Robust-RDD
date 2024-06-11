@@ -1,0 +1,316 @@
+import numpy as np
+import pandas as pd
+import matplotlib
+import matplotlib.pyplot as plt
+
+
+def sign(x):
+    """
+    This function computes the sign of the given observation.
+
+    Parameters
+    ----------
+    x : int
+        The observation to compute the sign.
+
+    Returns
+    -------
+    sign: int 
+        Returns -1 if x is negative and 1 if nonnegative.
+    """
+    if x<0:
+        return -1
+    else:
+        return 1
+
+def treatment(x):
+    """
+    This function computes if an observation has received treatment.
+
+    Parameters
+    ----------
+    x : int
+        The observation to compute the treatment variable.
+
+    Returns
+    -------
+    treatment: int 
+        Returns 0 if observation x does not receive treatment and 1 if it does receive treatment.
+    """
+    if x<0:
+        return 0
+    else:
+        return 1
+
+def indicator(x):
+    """
+    This indicator function computes if an observation is within a distance of the threshold.
+
+    Parameters
+    ----------
+    x : int
+        The observation to compute the indicator value.
+
+    Returns
+    -------
+    treatment: int 
+        Returns 1 if observation x is within the distance and 0 if it is not.
+    """
+    if np.abs(x)<0.1:
+        return 1
+    else:
+        return 0
+
+def genT(X):
+    """
+    This function creates an array of treatment variables for a sample of observations.
+
+    Parameters
+    ----------
+    X : arrray[int]
+        The sample of observation to compute the treatment values for.
+
+    Returns
+    -------
+    T: array[int]
+        Returns an array with 1's and 0's for each observation depending on wether that observation received treatment.
+    """
+    T = {}
+    for i in range(len(X)):
+        T = np.append(T,treatment(X[i]))
+    T = np.delete(T,0)
+    return T
+            
+def mu_noak(L,x):
+    """
+    This function generates the non-random part of outcome function with the DGP used by Noack and Rothe (NR) (2023).
+
+    Parameters
+    ----------
+    L : int
+        The parameter used by NR to define the level of misspecification L={0,10,20,30,40}.
+    x : int
+        The observation to compute the non-random outcome value for.
+
+    Returns
+    -------
+    mu: int
+        Returns the non-random part of the outcome value for that observation.
+    """
+    return sign(x)*np.power(x,2) - L*sign(x)*(np.power(x-0.1*sign(x),2)-np.power(0.1,2)*sign(x))*indicator(x)
+
+def genY_noak(L,X,epsilon):
+    """
+    This function generates a sample of outcomes (Y_i's) with the DGP used by Noack and Rothe (NR) (2023).
+
+    Parameters
+    ----------
+    L : int
+        The parameter used by NR to define the level of misspecification L={0,10,20,30,40}.
+    X : arrray[int]
+        The sample of observation to compute the outcome values for.
+    epsilon : arrray[int]
+        The vector of random errors.
+
+    Returns
+    -------
+    Y: arrray[int]
+        Returns a vector with the outcome values.
+    """
+    Y = {}
+    for i in range(len(X)):
+        Y = np.append(Y,mu_noak(L,X[i]) + epsilon[i])
+    Y = np.delete(Y,0)
+    return Y
+
+def mu_basicLinear(tau,alpha,beta,x): 
+    """
+    This function generates the non-random part of the outcome function with a basic linear potential outcomes framework DGP.
+
+    Parameters
+    ----------
+    tau : int 
+        The size of the treatment effect.
+    alpha: int
+        The intercept parameter of the equation.
+    beta: int
+        The slope parameter of the equation.
+    x : int
+        The observation to compute the non-random outcome value for.
+
+    Returns
+    -------
+    mu: int
+        Returns the non-random part the outcome value.
+    """
+    return alpha + beta*x + tau*treatment(x)
+
+def genY_basicLinear(tau,alpha,beta,X,epsilon):
+    """
+    This function generates a sample of outcomes (Y_i's) with a basic linear potential outcomes framework DGP.
+
+    Parameters
+    ----------
+    tau : int 
+        The size of the treatment effect.
+    alpha: int
+        The intercept parameter of the equation.
+    beta: int
+        The slope parameter of the equation.
+    X : arrray[int]
+        The sample of observation to compute the outcome values for.
+    epsilon : arrray[int]
+        The vector of random errors.
+
+    Returns
+    -------
+    Y: arrray[int]
+        Returns a vector with the outcome values.
+    """
+    Y = {}
+    for i in range(len(X)):
+        Y = np.append(Y,mu_basicLinear(tau,alpha,beta,X[i]) + epsilon[i])
+    Y = np.delete(Y,0)
+    return Y
+
+def genY(name, X, tau=0, L=0, alpha=0, beta=0):
+    """
+    This function generates a sample of observations from the given DGP.
+
+    Parameters
+    ----------
+    name: string
+        The name of the DGP to use.
+    X : arrray[int]
+        The sample of observation to compute the outcome values for.
+    tau : int, Default value: 0
+        The size of the treatment effect. For basic and basic linear model.
+    L : int, Default value: 0
+        The parameter used by NR to define the level of misspecification L={0,10,20,30,40}. For the Noack and Rothe model.
+    alpha: int, Default value: 0
+        The intercept parameter of the equation. For basic linear model.
+    beta: int, Default value: 0
+        The slope parameter of the equation. For basic linear model.
+
+    Returns
+    -------
+    Y: arrray[int]
+        Returns a vector with the outcome values.
+    """
+    epsilon = np.random.normal(0,0.5,len(X))
+    if name == 'Noack':
+        Y = genY_noak(L,X,epsilon)
+    elif name == 'Basic Linear':
+        Y = genY_basicLinear(tau,alpha,beta,X,epsilon)
+    else:
+        return NameError('Type of GDP is not recognised')
+    return Y
+
+def genOutlier(Y, X, name, nOutliers=1, delta=0.1):
+    ''' 
+    This function generates outliers based on different methods
+
+    Parameters
+    ----------
+    Y : arrray[int]
+        The sample of outcomes to generate the outlier(s) value(s) for.
+    X : arrray[int]
+        The sample of observation to generate the outlier(s) value(s) for.
+    name : string 
+        The name of the method to generate the ouotlier(s).
+        Option values: Simple, Simple Outside.
+    nOutlier : int
+        The number of outliers to generate.
+    delta : int  
+        The size of the donut stripe.
+
+    Returns
+    -------
+    Y : arrray[int]
+        The sample of outcomes with the outlier(s) value(s).
+    Outliers : arrray[int]
+        An array with 1 if outlier and 0 is not. (Used for coloring the dots on scatter plots)
+    '''
+    Outliers = np.zeros_like(Y)
+    # Simple generates to outlier(s) inside the donut stripe 
+    if name == 'Simple':
+        i = 0
+        for j in range(nOutliers):
+            found=True
+            # Find first observation in the stripe and change outcome value to 2.5
+            while(found):
+                if (X[i] >= -delta) & (X[i] < 0):
+                    Y[i] = 2.5
+                    Outliers[i] = 1
+                    found = False
+                    i=i+1
+                else: 
+                    i=i+1  
+
+    # Simple Outised generates to outlier(s) outside the donut stripe 
+    if name == 'Simple Outside':
+        i = 0
+        for j in range(nOutliers):
+            found=True
+            # Find first observation just outside the stripe and change outcome value to 2.5
+            while(found):
+                if (X[i] >= -2*delta) & (X[i] < -delta):
+                    Y[i] = 2.5
+                    Outliers[i] = 1
+                    found = False
+                    i=i+1
+                else: 
+                    i=i+1    
+    return Y, Outliers
+
+def genSample(name, n, tau=0,  alpha=0, beta=0,L=0,cutoff=0, outlier=False, outlierMethod='',nOutliers=1, printPlot=True):
+    """
+    Generate a sample for RDD analysis: running variables (X), outcomes (Y), and treatments (T)
+
+    Parameters
+    ----------
+    name: string, Options: 'Noak', 'Basic', 'Basic Linear'
+        The name of the DGP to use to generate the sample.
+    n: int
+        The size of the sample.
+    tau : int, Default value: 0
+        The size of the treatment effect. For basic and basic linear model.
+    L : int, Default value: 0
+        The parameter used by NR to define the level of misspecification L={0,10,20,30,40}. For the Noack and Rothe model.
+    alpha: int, Default value: 0
+        The intercept parameter of the equation. For basic linear model.
+    beta: int, Default value: 0
+        The slope parameter of the equation. For basic linear model.
+    cutoff : int , Default value: 0
+        The treshold of the running variable that determines treatment
+    outlier: boolean
+        True if sample should have an outlier(s)
+    outlierMethod: string
+        Name of the outlier generation method to use
+    printPlot: boolean, Default value: False
+        Defines if a plot is printed with the sample.
+
+    Returns
+    -------
+    sample: DataFrame
+        A dataframe object with the geneated Y (outcomes) and X (running variables) and given T (treatment variables)
+    """
+    X = np.random.uniform(-1+cutoff,1+cutoff,n)
+    Y = genY(name, X, tau, L, alpha, beta)
+    Outliers = np.zeros_like(Y)
+    if outlier == True:
+        Y, Outliers  = genOutlier(Y,X,outlierMethod,nOutliers)
+    T = genT(X)
+
+    # Create sample dataframe
+    sample = pd.DataFrame({'Y': Y,'X': X,'T': T, 'Outlier': Outliers})
+    sample.Y = sample.Y.astype(float)
+
+    # Print plot
+    if printPlot == True:
+        cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["grey","red"])
+        plt.scatter(X,Y,s=6,c=sample.Outlier, cmap=cmap)
+        plt.xlabel('$X_i$')
+        plt.ylabel('$Y_i$')
+        
+    return sample
