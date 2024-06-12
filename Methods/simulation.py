@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 from methods.sample import genSample
-from methods.rrdd import fitRD
+from methods.rrdd import jointFitRD
 
 
 def simulation(r,nameSample,n,tau=0,  alpha=0, beta=0, L=0, cutoff=0,b=1, outlier=False, outlierMethod='', nOutliers=0):
@@ -41,28 +41,65 @@ def simulation(r,nameSample,n,tau=0,  alpha=0, beta=0, L=0, cutoff=0,b=1, outlie
     t_RH = {}
     t_RT = {}
     t_D = {}
+    p1_OLS = {}
+    p1_RH = {}
+    p1_RT = {}
+    p1_D = {}
+    p05_OLS = {}
+    p05_RH = {}
+    p05_RT = {}
+    p05_D = {}
+    p01_OLS = {}
+    p01_RH = {}
+    p01_RT = {}
+    p01_D = {}
 
+    t = [t_OLS, t_RH, t_RT, t_D]
+    p1 = [p1_OLS,p1_RH, p1_RT, p1_D]
+    p05 = [p05_OLS , p05_RH, p05_RT, p05_D]
+    p01 = [{},{},{},{}]
+    models = ['OLS', 'Robust Huber', 'Robust Tuckey','Donut']
     # Generate sample and fit models r times
-    for i in range(r):
+    for k in range(r):
         # Generate sample
         sample = genSample(nameSample,n,tau, alpha, beta,L,cutoff,outlier, outlierMethod, nOutliers, False)
         # Select sample to be used according to bandwidth
         sample = sample.loc[np.abs(sample.X-cutoff)<=b]
         # Estimate models
-        t_OLS = np.append(t_OLS, fitRD('OLS',sample,0))
-        t_RH = np.append(t_RH, fitRD('Robust Huber',sample,0))
-        t_RT = np.append(t_RT, fitRD('Robust Tuckey',sample,0))
-        t_D = np.append(t_D, fitRD('Donut',sample,0))
+        
+        for i in range(len(models)):
+            res = jointFitRD(models[i],sample)
+            t[i] = np.append(t[i], res.params[2])
+            p = res.pvalues[2]
+
+            if p <= 0.01:
+                p1[i] = np.append(p1[i], 1)
+                p05[i] = np.append(p05[i], 1)
+                p01[i] = np.append(p01[i], 1)
+            elif p <= 0.05:
+                p1[i] = np.append(p1[i], 1)
+                p05[i] = np.append(p05[i], 1)
+                p01[i] = np.append(p01[i], 0)
+            elif p <= 0.1:
+                p1[i] = np.append(p1[i], 1)
+                p05[i] = np.append(p05[i], 0)
+                p01[i] = np.append(p01[i], 0)
+            else:
+                p1[i] = np.append(p1[i], 0)
+                p05[i] = np.append(p05[i], 0)
+                p01[i] = np.append(p01[i], 0)        
     
     # Adjust the format of the arrays (delete empty first cell)
-    t_OLS = np.delete(t_OLS,0)
-    t_RH = np.delete(t_RH,0)
-    t_RT = np.delete(t_RT,0)
-    t_D = np.delete(t_D,0)
+    for i in range(len(models)):
+        t[i] = np.delete(t[i],0)
+        p1[i] = np.delete(p1[i],0)
+        p05[i] = np.delete(p05[i],0)
+        p01[i] = np.delete(p01[i],0)
+    
 
     # Create dataframe with simultation results
-    simulationResults = pd.DataFrame({'OLS':t_OLS, 'Huber':t_RH, 'Tuckey':t_RT, 'Donut':t_D})
-    return simulationResults
+    pointEstimation = pd.DataFrame({'OLS':t[0], 'Huber':t[1], 'Tuckey':t[2], 'Donut':t[3]})
+    return pointEstimation
 
 def compRMSE(simRes):
     return [sm.tools.eval_measures.rmse(simRes.OLS,2), sm.tools.eval_measures.rmse(simRes.Huber,2), 
