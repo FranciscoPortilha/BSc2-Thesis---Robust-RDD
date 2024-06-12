@@ -163,6 +163,8 @@ def plotComparison(sample, name1, name2="", name3="",cutoff=0):
     plt.legend()
 
 def jointFitRD(name,sample,cutoff=0):
-
+    # Create new column with X*T covariate
     sample['XT'] = sample.X*sample.Treatment
+
+    # fit model and return result
     return fit(name,sample,True,cutoff,True)

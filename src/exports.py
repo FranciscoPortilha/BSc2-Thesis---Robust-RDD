@@ -34,9 +34,6 @@ def niceHist(series, saveFig = False, figPath = '', JB = False):
     JB: boolean, default:False
         Determine if the Jarque-Bera statistics are printed.
     '''
-    # print jarque-bera statistics
-    if JB == True:
-        print('Jarque-Bera : '+ st.jarque_bera(serie))
 
     # Plot the histogram    
     fig = plt.figure(figsize=[12,5])
@@ -61,9 +58,10 @@ def niceHist(series, saveFig = False, figPath = '', JB = False):
         kde.fit()
         ax.plot(kde.support, kde.density, lw=3, label=labels[c] + ' - kde', zorder=10, color= colors[c])
         c = c+1
+        
     # Export histogram to path or return
     ax.legend()
     if saveFig:
         fig.savefig(figPath)
     else:
-        return fig
+        return ax

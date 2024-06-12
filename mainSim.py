@@ -1,5 +1,5 @@
-import methods.exports as exp
-from methods.simulation import simulations
+import src.exports as exp
+from src.simulation import simulations
 
 
 r = 10
