@@ -26,7 +26,7 @@ def genExog(sample, intercept=False, jointFit=False):
     exog = sample.copy() 
     exog = exog.drop('Y',axis='columns')
     if jointFit is False:
-        exog = exog.drop('T',axis='columns')
+        exog = exog.drop('Treatment',axis='columns')
     exog = exog.drop('Outlier',axis='columns')
     # Add an intercept if requested
     if (intercept == True):
@@ -34,7 +34,7 @@ def genExog(sample, intercept=False, jointFit=False):
     
     return exog
 
-def fit(name, sample, intercept, cutoff=0):
+def fit(name, sample, intercept, cutoff=0, jointFit=False):
     ''' 
     This method will fit a regression based on the different estimation methods on the given sample.
 
@@ -56,16 +56,17 @@ def fit(name, sample, intercept, cutoff=0):
         The parameters of the regression.
     '''
     # Prepare sample
-    exog = genExog(sample,intercept)    
+    exog = genExog(sample,intercept,jointFit)    
+
     # Estimate regression based on estimation method
     if (name == 'Robust Huber'):
-        res = sm.RLM(sample.Y,exog.to_numpy(),M=sm.robust.norms.HuberT())
+        res = sm.RLM(sample.Y,exog,M=sm.robust.norms.HuberT())
            
     elif (name == 'Robust Tuckey'):
-        res = sm.RLM(sample.Y,exog.to_numpy(),M=sm.robust.norms.TukeyBiweight())
+        res = sm.RLM(sample.Y,exog,M=sm.robust.norms.TukeyBiweight())
 
     elif (name == 'OLS'):
-        res = sm.OLS(sample.Y,exog.to_numpy())
+        res = sm.OLS(sample.Y,exog)
 
     elif (name == 'Donut'):
         sample = sample.loc[np.abs(sample.X-cutoff)>=0.1]
@@ -77,46 +78,12 @@ def fit(name, sample, intercept, cutoff=0):
     # Fit model and return parameters
     res = res.fit()
     return res
-
-def splitFit (name,sample,cutoff,intercept):
-    ''' 
-    This method fits 2 distinct regressions on either side of the cutoff.
-
-    Parameters
-    ----------
-    name : string
-        The name of the estimation method to use.
-        Opiton values : Robust Huber, Robust Tuckey, OLS, Donut.
-    sample : DataFrame
-        The sample to estimate the regression for.
-    cutoff : int
-        The value of the threshold in the running variable.
-    intercept : boolean 
-        Determines if an intercept is added to the sample.
-    
-    Returns
-    -------
-    params_below : object
-        The parameters of the regression below the cutoff.
-    params_above : object
-        The parameters of the regression above the cutoff.
-    '''
-    # Split sample at cutoff
-    sample_below = sample.loc[sample.X<=cutoff]
-    sample_above = sample.loc[sample.X>cutoff]
-    params_below = fit(name, sample_below,intercept=intercept).params
-    params_above = fit(name, sample_above,intercept=intercept).params
-    #print(params_below, params_above)
-    return params_below, params_above
-
-def jointFit(name,sample,cutoff=0):
-    sample['XT'] = sample.apply(lambda row: row.X + row.T, axis=1)
-    return fit(name,sample,True,cutoff,True)
     
 
-def fitRD(name,sample,cutoff):
+def splitFitRD(name,sample,cutoff=0):
     ''' 
-    This method estimates the treatment effects based on RDD.
+    This method estimates the treatment effects based on RDD estimated by 2 regression
+    on eeach side of the cutoff.
     
     Parameters
     ----------
@@ -133,11 +100,15 @@ def fitRD(name,sample,cutoff):
     tau : int
         The estimated treatment effect.
     '''
-    params_below, params_above  = splitFit(name,sample, cutoff, True)
+    # Split sample at cutoff
+    sample_below = sample.loc[sample.X<=cutoff]
+    sample_above = sample.loc[sample.X>cutoff]
+    params_below = fit(name, sample_below,intercept=True).params
+    params_above = fit(name, sample_above,intercept=True).params
     tau =  params_above.iloc[0] - params_below.iloc[0]
     return tau
-
-def plotSplitFitComparison(sample, cutoff, name1, name2="", name3=""):
+    
+def plotComparison(sample, name1, name2="", name3="",cutoff=0):
     ''' 
     This method plots a figure with the regession lines of the different estimation methods 
 
@@ -145,8 +116,6 @@ def plotSplitFitComparison(sample, cutoff, name1, name2="", name3=""):
     ----------
     sample : DataFrame
         The sample to estimate the regression for.
-    cutoff : int
-        The value of the threshold in the running variable. 
     name1 : string
         The name of the estimation method to use.
         Opiton values : Robust Huber, Robust Tuckey, OLS, Donut.
@@ -156,7 +125,8 @@ def plotSplitFitComparison(sample, cutoff, name1, name2="", name3=""):
     name3 : string ,Default value : ""
         The name of the estimation method to use.
         Opiton values : Robust Huber, Robust Tuckey, OLS, Donut.
-        
+    cutoff : int
+        The value of the threshold in the running variable.     
     '''
     # Fit regressions and estimate ATE's
     params1_below, params1_above  = splitFit(name1,sample, cutoff, True)
@@ -191,3 +161,8 @@ def plotSplitFitComparison(sample, cutoff, name1, name2="", name3=""):
         plt.plot(x_above,params3_above.iloc[0]+params3_above.iloc[1]*x_above, color ='purple', linewidth=0.7, label=name3+' (ate: ' +str(round(tau3,2))+')')
 
     plt.legend()
+
+def jointFitRD(name,sample,cutoff=0):
+
+    sample['XT'] = sample.X*sample.Treatment
+    return fit(name,sample,True,cutoff,True)

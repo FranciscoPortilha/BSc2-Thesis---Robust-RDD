@@ -61,6 +61,8 @@ def indicator(x):
     else:
         return 0
 
+
+
 def genT(X):
     """
     This function creates an array of treatment variables for a sample of observations.
@@ -173,6 +175,8 @@ def genY_basicLinear(tau,alpha,beta,X,epsilon):
     Y = np.delete(Y,0)
     return Y
 
+# Generation of the Outcomes (Y_i) given the different DGP's
+                            
 def genY(name, X, tau=0, L=0, alpha=0, beta=0):
     """
     This function generates a sample of observations from the given DGP.
@@ -263,6 +267,8 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1):
                     i=i+1    
     return Y, Outliers
 
+# Generation of the Sample X_i's and Y_i's 
+
 def genSample(name, n, tau=0,  alpha=0, beta=0,L=0,cutoff=0, outlier=False, outlierMethod='',nOutliers=1, printPlot=True):
     """
     Generate a sample for RDD analysis: running variables (X), outcomes (Y), and treatments (T)
@@ -300,11 +306,13 @@ def genSample(name, n, tau=0,  alpha=0, beta=0,L=0,cutoff=0, outlier=False, outl
     Outliers = np.zeros_like(Y)
     if outlier == True:
         Y, Outliers  = genOutlier(Y,X,outlierMethod,nOutliers)
-    T = genT(X)
+    Tr = genT(X)
 
     # Create sample dataframe
-    sample = pd.DataFrame({'Y': Y,'X': X,'T': T, 'Outlier': Outliers})
+    sample = pd.DataFrame({'Y': Y,'X': X,'Treatment': Tr, 'Outlier': Outliers})
     sample.Y = sample.Y.astype(float)
+    sample.Treatment = sample.Treatment.astype(float)
+    sample.Outlier = sample.Outlier.astype(float)
 
     # Print plot
     if printPlot == True:
