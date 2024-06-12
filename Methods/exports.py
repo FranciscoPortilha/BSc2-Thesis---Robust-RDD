@@ -1,5 +1,6 @@
 import numpy as np 
 import matplotlib.pyplot as plt
+import statsmodels.api as sm
 import statsmodels.stats.stattools as st
 from scipy.stats import norm
 
@@ -33,11 +34,25 @@ def niceHist(serie, JB = False):
         print('Jarque-Bera : '+ st.jarque_bera(serie))
 
     # Plot the histogram    
-    hist = plt.hist(serie, bins=60, density=True)
-    plt.title("Fit Values: {:.2f} and {:.2f}".format(np.mean(serie), np.std(serie)))
+    fig = plt.figure(figsize=[12,5])
+    ax = fig.add_subplot(1,1,1)
+    ax.hist(serie,
+            bins=20,
+            density=True,
+            label="Histogram from samples",
+            zorder=5,
+            edgecolor="k",
+            alpha=0.5,)
+    #ax.title("Fit Values: {:.2f} and {:.2f}".format(np.mean(serie), np.std(serie)))
+    
+    kde = sm.nonparametric.KDEUnivariate(serie)
+    kde.fit()
+    
+    ax.plot(kde.support, kde.density, lw=3, label="KDE from samples", zorder=10)
 
+    return fig
     # Plot the matching normal PDF.
-    xmin, xmax = plt.xlim()
-    x = np.linspace(xmin, xmax, 100) 
-    p = norm.pdf(x, np.mean(serie), np.std(serie))
-    plt.plot(x, p, 'k', linewidth=2)
+    #xmin, xmax = plt.xlim()
+    #x = np.linspace(xmin, xmax, 100) 
+    #p = norm.pdf(x, np.mean(serie), np.std(serie))
+    #plt.plot(x, p, 'k', linewidth=2)
