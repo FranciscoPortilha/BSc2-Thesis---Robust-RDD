@@ -1,9 +1,10 @@
 import numpy as np
 import pandas as pd
-import statsmodels.api as sm
-from src.simMetrics import compRMSE
 from src.sample import genSample
 from src.rrdd import jointFitRD
+from src.simMetrics import compRMSE
+from src.simMetrics import compJB
+from src.exports import toLatexTable
 from src.exports import scenariosHist
 
 
@@ -40,7 +41,7 @@ def simulation(r,nameSample,n,tau=0,  alpha=0, beta=0, L=0, cutoff=0,b=1, outlie
     """ 
     # Creat empty output arrays
     
-    t = [{},{},{},{}]
+    bias = [{},{},{},{}]
 
     p_1 = [{},{},{},{}]
     p_05 = [{},{},{},{}]
@@ -66,7 +67,7 @@ def simulation(r,nameSample,n,tau=0,  alpha=0, beta=0, L=0, cutoff=0,b=1, outlie
             res = jointFitRD(models[i],sample)
 
             # Record point estimate
-            t[i] = np.append(t[i], res.params.iloc[2])
+            bias[i] = np.append(bias[i], res.params.iloc[2] - tau)
 
             # Calculate t test of Ho: t == tau is rejected
             if tau == 0:
@@ -119,7 +120,7 @@ def simulation(r,nameSample,n,tau=0,  alpha=0, beta=0, L=0, cutoff=0,b=1, outlie
     
     # Adjust the format of the arrays (delete empty first cell)
     for i in range(len(models)):
-        t[i] = np.delete(t[i],0)
+        bias[i] = np.delete(bias[i],0)
 
         p_1 [i] = np.delete(p_1 [i],0)
         p_05[i] = np.delete(p_05[i],0)
@@ -130,7 +131,7 @@ def simulation(r,nameSample,n,tau=0,  alpha=0, beta=0, L=0, cutoff=0,b=1, outlie
         ci_01[i] = np.delete(ci_01[i],0) 
 
     # Create dataframes with results from the simulation
-    pointEstimation = pd.DataFrame({'OLS':t[0], 'Huber':t[1], 'Tukey':t[2], 'Donut':t[3]})
+    pointEstimation = pd.DataFrame({'OLS':bias[0], 'Huber':bias[1], 'Tukey':bias[2], 'Donut':bias[3]})
 
     testValues_1  = pd.DataFrame({'OLS':p_1[0], 'Huber':p_1[1], 'Tukey':p_1[2], 'Donut':p_1[3]})
     testValues_05 = pd.DataFrame({'OLS':p_05[0], 'Huber':p_05[1], 'Tukey':p_05[2], 'Donut':p_05[3]})
@@ -184,31 +185,60 @@ def simulations(r,name,n,tau,alpha,beta,cutoff=0,L=0):
     point6, test6 , confInt6 = simulation(r,'Noack',n,tau=0,L=40,cutoff=cutoff,b=0.5,outlier=False)
 
     
-    # Create 2 dataframe with results about Mean, St.dev and RMSE 
-    multiCol1a = pd.MultiIndex.from_arrays([['Scenario 1', 'Scenario 1', 'Scenario 1',
+    # Create labels for dataframe with results about Mean, St.dev and RMSE 
+    multiCol1a = pd.MultiIndex.from_arrays([['Mean','St.Var','RMSE',
+                                             'Mean','St.Var','RMSE',
+                                             'Mean','St.Var','RMSE'],
+                                            ['Scenario 1', 'Scenario 1', 'Scenario 1',
                                              'Scenario 2', 'Scenario 2', 'Scenario 2',
-                                             'Scenario 3', 'Scenario 3', 'Scenario 3'], 
-                                           ['Mean','St.Var','RMSE',
-                                            'Mean','St.Var','RMSE',
-                                            'Mean','St.Var','RMSE',]])
+                                             'Scenario 3', 'Scenario 3', 'Scenario 3']])
     multiCol1b = pd.MultiIndex.from_arrays([['Scenario 4', 'Scenario 4', 'Scenario 4',
                                              'Scenario 5', 'Scenario 5', 'Scenario 5',
-                                             'Scenario 6', 'Scenario 6', 'Scenario 6'], 
-                                            ['Mean','St.Var','RMSE',
-                                             'Mean','St.Var','RMSE',
-                                             'Mean','St.Var','RMSE']])
+                                             'Scenario 6', 'Scenario 6', 'Scenario 6']])
     row = ['OLS', 'Huber', 'Tuckey', 'Donut']
+
+    # Create 2 dataframes with results about Mean, St.dev and RMSE 
     Results1a = pd.DataFrame(np.transpose(np.array([point1.mean(),point1.std(),compRMSE(point1, 2), 
                                                     point2.mean(),point2.std(),compRMSE(point2, 2), 
                                                     point3.mean(),point3.std(),compRMSE(point3, 2)])),
                                                     columns=multiCol1a, index=row)
-    
     Results1b = pd.DataFrame(np.transpose(np.array([point4.mean(),point4.std(),compRMSE(point4, 2), 
                                                     point5.mean(),point5.std(),compRMSE(point5, 2), 
                                                     point6.mean(),point6.std(),compRMSE(point6, 2)])),
                                                     columns=multiCol1b, index=row)
     
-    scenariosHist([point1, point2, point3, point4, point5, point6],True,'images/testfig1.png')
+    # Create labels for dataframe with results about JB and t-test (Normal and student-t) 
+    multiCol1a = pd.MultiIndex.from_arrays([['', 'T-Test - T1 error', 'T-Test - T1 error',
+                                             '', 'T-Test - T1 error', 'T-Test - T1 error',
+                                             '', 'T-Test - T1 error', 'T-Test - T1 error',], 
+                                            ['JB','Normal','Student-t',
+                                             'JB','Normal','Student-t',
+                                             'JB','Normal','Student-t',],
+                                            ['Scenario 1', 'Scenario 1', 'Scenario 1',
+                                             'Scenario 2', 'Scenario 2', 'Scenario 2',
+                                             'Scenario 3', 'Scenario 3', 'Scenario 3']])
+    multiCol1b = pd.MultiIndex.from_arrays([['Scenario 4', 'Scenario 4', 'Scenario 4',
+                                             'Scenario 5', 'Scenario 5', 'Scenario 5',
+                                             'Scenario 6', 'Scenario 6', 'Scenario 6']])
+                                        
+    row = ['OLS', 'Huber', 'Tuckey', 'Donut']
+    
+    # Create 2 dataframes with results about JB and t-test (Normal and student-t) (0.1 significance)
+    Results2a_1 = pd.DataFrame(np.transpose(np.array([compJB(point1), test1[0].mean(),test1[0].mean(),
+                                                      compJB(point2), test2[0].mean(),test1[0].mean(), 
+                                                      compJB(point3), test3[0].mean(),test1[0].mean(),])),
+                                                      columns=multiCol1a, index=row)
+    
+    Results2b_1 = pd.DataFrame(np.transpose(np.array([compJB(point4), test4[0].mean(),test1[0].mean(),
+                                                      compJB(point5), test5[0].mean(),test1[0].mean(), 
+                                                      compJB(point6), test6[0].mean(),test1[0].mean(),])),
+                                                      columns=multiCol1b, index=row)
 
-
-    return Results1a , Results1b
+    # Captions for latex tablex
+    caption1 = 'Bias, standard deviation and root mean squared error of the point estimates of the treatment effect'
+    caption2 = 'Jarque-Bera test statistic of the simulated point estimates.'
+               'T-test incorrect rejection of $H_0: \hat{\tau}=\tau$ (normal and student\'s-t distributions)'
+    
+    scenariosHist([point1, point2, point3, point4, point5, point6],True,'images/scenariosHist.png')
+    toLatexTable(r, n, Results1a, Results1b,caption1,ref='table:R1')
+    toLatexTable(r, n, Results2a_1, Results2b_1,caption2,ref='table:R2_1')

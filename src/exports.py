@@ -6,15 +6,15 @@ import statsmodels.stats.stattools as st
 from scipy.stats import norm
 
 
-def toLatexTable(results1,results2,r,n,):
+def toLatexTable(r,n,results1,results2='',caption='',ref=''):
     '''
     This method prints latex code for a table with the results.
 
     '''
     # Print results to latex tables
-    print("TABLE 1 - ")
-    print(results1.to_latex(float_format="{:.3f}".format, multicolumn_format='c'))
-    print(results2.to_latex(float_format="{:.3f}".format, multicolumn_format='c'))
+    print(results1.to_latex(float_format="{:.3f}".format, multicolumn_format='c',caption=caption,label=ref))
+    if any(results2 != ''):
+        print(results2.to_latex(float_format="{:.3f}".format, multicolumn_format='c',caption=caption,label=ref))
     print('r = ' +str(r)+' , n = '+str(n))
 
 
@@ -36,7 +36,7 @@ def scenariosHist(series, saveFig = False, figPath = ''):
     '''
     fig, axs = plt.subplots(2,3,figsize=[20,12])
     labels = ['OLS','Huber','Tukey','Donut']
-    colors = ['darkorange','royalblue','forestgreen','purple']
+    colors = ['darkorange','royalblue','mediumseagreen','mediumorchid']
     j ,l = 0,0
     for i in range(6):
         c = 0

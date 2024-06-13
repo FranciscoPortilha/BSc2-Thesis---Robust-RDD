@@ -17,8 +17,6 @@ import pandas as pd
 #print(sample)
 #print(res.scale)
 
-#print(res.conf_int()[1][2])
-
 #print(res.pvalues)
 #print(res.t_test(([0,0,1,0],0.3)))
 #print(res.t_test(([0,0,1,0],0.3)).pvalue)
@@ -38,4 +36,4 @@ import pandas as pd
 r = 100
 n = 250
 
-results1, results2 = sim.simulations(r,'Basic Linear',n,tau=2,alpha=-1,beta=1,cutoff=0)
+sim.simulations(r,'Basic Linear',n,tau=2,alpha=-1,beta=1,cutoff=0)

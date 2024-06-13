@@ -1,4 +1,4 @@
-import methods.sample as smp
+import src.sample as smp
 
 # These tests test the methods from sample.py
 def test_sign_pos():
