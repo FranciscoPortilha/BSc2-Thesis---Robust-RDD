@@ -70,7 +70,7 @@ def simulation(r,nameSample,n,tau=0,  alpha=0, beta=0, L=0, cutoff=0,b=1, outlie
 
             # Calculate t test of Ho: t == tau is rejected
             if tau == 0:
-                p = np.append(t[i], res.pvalues.iloc[2])
+                p = res.pvalues.iloc[2]
             else:
                 p = res.t_test(([0,0,1,0],tau)).pvalue
 
@@ -181,7 +181,7 @@ def simulations(r,name,n,tau,alpha,beta,cutoff=0,L=0):
     point3, test3 , confInt3 = simulation(r,name,n,tau,alpha,beta,cutoff=cutoff,outlier=True, outlierMethod='Simple Outside', nOutliers=2)
     point4, test4 , confInt4 = simulation(r,name,n,tau,alpha,beta,cutoff=cutoff,outlier=True, outlierMethod='Simple', nOutliers=1)
     point5, test5 , confInt5 = simulation(r,name,n,tau,alpha,beta,cutoff=cutoff,outlier=True, outlierMethod='Simple', nOutliers=2)
-    point6, test6 , confInt6 = simulation(r,'Noack',n,tau,L=40,cutoff=cutoff,b=0.5,outlier=False)
+    point6, test6 , confInt6 = simulation(r,'Noack',n,tau=0,L=40,cutoff=cutoff,b=0.5,outlier=False)
 
     
     # Create 2 dataframe with results about Mean, St.dev and RMSE 

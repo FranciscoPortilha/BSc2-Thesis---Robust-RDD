@@ -34,20 +34,18 @@ def scenariosHist(series, saveFig = False, figPath = ''):
     JB: boolean, default:False
         Determine if the Jarque-Bera statistics are printed.
     '''
-    fig = plt.figure(figsize=[20,12])
-    
+    fig, axs = plt.subplots(2,3,figsize=[20,12])
     labels = ['OLS','Huber','Tukey','Donut']
-    colors = ['darkorange','cornflowerblue','forestgreen','purple']
-
+    colors = ['darkorange','royalblue','forestgreen','purple']
+    j ,l = 0,0
     for i in range(6):
-        # Plot the histogram    
-        ax = fig.add_subplot(2,3,1+i)
         c = 0
+        # Plot the histogram 
         for column in series[i]:
-            ax.hist(series[i][column],
+            axs[j][l].hist(series[i][column],
                     bins=40,
                     density=True,
-                    label=labels[c] +" - estimates",
+                    label=labels[c],
                     zorder=5,
                     edgecolor="k",
                     alpha=0.5,
@@ -56,16 +54,21 @@ def scenariosHist(series, saveFig = False, figPath = ''):
             # Plot kerndel density function 
             kde = sm.nonparametric.KDEUnivariate(series[i][column])
             kde.fit()
-            ax.plot(kde.support, kde.density, lw=3, label=labels[c] + ' - kde', zorder=10, color= colors[c])
+            axs[j][l].plot(kde.support, kde.density, lw=3, zorder=10, color= colors[c])
             c = c+1
-        #ax.title("scenario " + str(1+i))
-        if i==5:
-            ax.legend()
+        
+        axs[j][l].set_title("Scenario " + str(1+i))
+        if i==0:
+            axs[j][l].legend(loc='upper left')
+        if i==2:
+            j = 1
+            l = -1
+        l = l+1
 
     if saveFig:
         fig.savefig(figPath)
     else:
-        return ax
+        return fig
     
 
 
