@@ -34,10 +34,10 @@ def scenariosHist(series, saveFig = False, figPath = ''):
     JB: boolean, default:False
         Determine if the Jarque-Bera statistics are printed.
     '''
-    fig = plt.figure(figsize=[7,5])
+    fig = plt.figure(figsize=[20,12])
     
     labels = ['OLS','Huber','Tukey','Donut']
-    colors = ['r','b','g','purple']
+    colors = ['darkorange','cornflowerblue','forestgreen','purple']
 
     for i in range(6):
         # Plot the histogram    
@@ -58,9 +58,9 @@ def scenariosHist(series, saveFig = False, figPath = ''):
             kde.fit()
             ax.plot(kde.support, kde.density, lw=3, label=labels[c] + ' - kde', zorder=10, color= colors[c])
             c = c+1
-        ax.legend()
-        #ax.title("Fit Values: {:.2f} and {:.2f}".format(np.mean(serie), np.std(serie)))
-
+        #ax.title("scenario " + str(1+i))
+        if i==5:
+            ax.legend()
 
     if saveFig:
         fig.savefig(figPath)
