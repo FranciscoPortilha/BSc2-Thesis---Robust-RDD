@@ -19,7 +19,7 @@ def toLatexTable(results1,results2,r,n,):
 
 
 
-def niceHist(series, saveFig = False, figPath = '', JB = False):
+def scenariosHist(series, saveFig = False, figPath = ''):
     '''
     This function plot the histogram of the serie with a pdf of a normal function with equal mean and st.dev.
 
@@ -34,34 +34,38 @@ def niceHist(series, saveFig = False, figPath = '', JB = False):
     JB: boolean, default:False
         Determine if the Jarque-Bera statistics are printed.
     '''
-
-    # Plot the histogram    
-    fig = plt.figure(figsize=[12,5])
-    ax = fig.add_subplot(1,1,1)
+    fig = plt.figure(figsize=[7,5])
+    
     labels = ['OLS','Huber','Tukey','Donut']
     colors = ['r','b','g','purple']
-    c = 0
-    for column in series:
-        print(series[column])
-        ax.hist(series[column],
-                bins=40,
-                density=True,
-                label=labels[c] +" - estimates",
-                zorder=5,
-                edgecolor="k",
-                alpha=0.5,
-                color= colors[c])
+
+    for i in range(6):
+        # Plot the histogram    
+        ax = fig.add_subplot(2,3,1+i)
+        c = 0
+        for column in series[i]:
+            ax.hist(series[i][column],
+                    bins=40,
+                    density=True,
+                    label=labels[c] +" - estimates",
+                    zorder=5,
+                    edgecolor="k",
+                    alpha=0.5,
+                    color= colors[c])
+            
+            # Plot kerndel density function 
+            kde = sm.nonparametric.KDEUnivariate(series[i][column])
+            kde.fit()
+            ax.plot(kde.support, kde.density, lw=3, label=labels[c] + ' - kde', zorder=10, color= colors[c])
+            c = c+1
+        ax.legend()
         #ax.title("Fit Values: {:.2f} and {:.2f}".format(np.mean(serie), np.std(serie)))
-        
-        # Plot kerndel density function 
-        kde = sm.nonparametric.KDEUnivariate(series[column])
-        kde.fit()
-        ax.plot(kde.support, kde.density, lw=3, label=labels[c] + ' - kde', zorder=10, color= colors[c])
-        c = c+1
-        
-    # Export histogram to path or return
-    ax.legend()
+
+
     if saveFig:
         fig.savefig(figPath)
     else:
         return ax
+    
+
+

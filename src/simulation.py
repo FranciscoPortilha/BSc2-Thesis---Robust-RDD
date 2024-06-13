@@ -4,6 +4,7 @@ import statsmodels.api as sm
 from src.simMetrics import compRMSE
 from src.sample import genSample
 from src.rrdd import jointFitRD
+from src.exports import scenariosHist
 
 
 def simulation(r,nameSample,n,tau=0,  alpha=0, beta=0, L=0, cutoff=0,b=1, outlier=False, outlierMethod='', nOutliers=0):
@@ -78,29 +79,34 @@ def simulation(r,nameSample,n,tau=0,  alpha=0, beta=0, L=0, cutoff=0,b=1, outlie
                 p_1 [i] = np.append(p_1 [i], 0)
                 p_05[i] = np.append(p_05[i], 0)
                 p_01[i] = np.append(p_01[i], 0)
+
             elif p >= 0.05:
                 p_1 [i] = np.append(p_1 [i], 1)
                 p_05[i] = np.append(p_05[i], 0)
                 p_01[i] = np.append(p_01[i], 0)
+
             elif p >= 0.01:
                 p_1 [i] = np.append(p_1 [i], 1)
                 p_05[i] = np.append(p_05[i], 1)
                 p_01[i] = np.append(p_01[i], 0)
+
             else:
                 p_1 [i] = np.append(p_1 [i], 1)
                 p_05[i] = np.append(p_05[i], 1)
                 p_01[i] = np.append(p_01[i], 1)      
 
             # Record correct coverage of confidence interval
-            if ( res.conf_int(0.1)[0][2] < tau ) & ( tau < res.conf_int(0.1)[1][2] ):
+            if ( res.conf_int(0.1)[0].iloc[2] < tau ) & ( tau < res.conf_int(0.1)[1].iloc[2] ):
                 ci_1 [i] = np.append(ci_1 [i],1) 
                 ci_05[i] = np.append(ci_05[i],1) 
                 ci_01[i] = np.append(ci_01[i],1) 
-            elif ( res.conf_int()[0][2] < tau ) & ( tau < res.conf_int()[1][2] ):
+
+            elif ( res.conf_int()[0].iloc[2] < tau ) & ( tau < res.conf_int()[1].iloc[2] ):
                 ci_1 [i] = np.append(ci_1 [i],0) 
                 ci_05[i] = np.append(ci_05[i],1) 
                 ci_01[i] = np.append(ci_01[i],1) 
-            elif ( res.conf_int(0.01)[0][2] < tau ) & ( tau < res.conf_int(0.01)[1][2] ):
+
+            elif ( res.conf_int(0.01)[0].iloc[2] < tau ) & ( tau < res.conf_int(0.01)[1].iloc[2] ):
                 ci_1 [i] = np.append(ci_1 [i],0) 
                 ci_05[i] = np.append(ci_05[i],0) 
                 ci_01[i] = np.append(ci_01[i],1) 
@@ -129,13 +135,14 @@ def simulation(r,nameSample,n,tau=0,  alpha=0, beta=0, L=0, cutoff=0,b=1, outlie
     testValues_1  = pd.DataFrame({'OLS':p_1[0], 'Huber':p_1[1], 'Tukey':p_1[2], 'Donut':p_1[3]})
     testValues_05 = pd.DataFrame({'OLS':p_05[0], 'Huber':p_05[1], 'Tukey':p_05[2], 'Donut':p_05[3]})
     testValues_01 = pd.DataFrame({'OLS':p_01[0], 'Huber':p_01[1], 'Tukey':p_01[2], 'Donut':p_01[3]})
-
+    
     ciCoverage_1  = pd.DataFrame({'OLS':ci_1[0], 'Huber':ci_1[1], 'Tukey':ci_1[2], 'Donut':ci_1[3]})
     ciCoverage_05 = pd.DataFrame({'OLS':ci_05[0], 'Huber':ci_05[1], 'Tukey':ci_05[2], 'Donut':ci_05[3]})
     ciCoverage_01 = pd.DataFrame({'OLS':ci_01[0], 'Huber':ci_01[1], 'Tukey':ci_01[2], 'Donut':ci_01[3]})
 
     testValues = [testValues_1 , testValues_05 , testValues_01]
     ciCoverage = [ciCoverage_1, ciCoverage_05, ciCoverage_01]
+
     # Return results
     return pointEstimation , testValues, ciCoverage
 
@@ -169,50 +176,39 @@ def simulations(r,name,n,tau,alpha,beta,cutoff=0,L=0):
     
     '''
     # Run Simulations
-    simRes1 = simulation(r,name,n,tau,alpha,beta,cutoff=cutoff,outlier=False)
-    simRes2 = simulation(r,name,n,tau,alpha,beta,cutoff=cutoff,outlier=True, outlierMethod='Simple Outside', nOutliers=1)
-    simRes3 = simulation(r,name,n,tau,alpha,beta,cutoff=cutoff,outlier=True, outlierMethod='Simple Outside', nOutliers=2)
-    simRes4 = simulation(r,name,n,tau,alpha,beta,cutoff=cutoff,outlier=True, outlierMethod='Simple', nOutliers=1)
-    simRes5 = simulation(r,name,n,tau,alpha,beta,cutoff=cutoff,outlier=True, outlierMethod='Simple', nOutliers=2)
-    simRes6 = simulation(r,'Noack',n,tau,L=40,cutoff=cutoff,b=0.5,outlier=False)
+    point1, test1 , confInt1 = simulation(r,name,n,tau,alpha,beta,cutoff=cutoff,outlier=False)
+    point2, test2 , confInt2 = simulation(r,name,n,tau,alpha,beta,cutoff=cutoff,outlier=True, outlierMethod='Simple Outside', nOutliers=1)
+    point3, test3 , confInt3 = simulation(r,name,n,tau,alpha,beta,cutoff=cutoff,outlier=True, outlierMethod='Simple Outside', nOutliers=2)
+    point4, test4 , confInt4 = simulation(r,name,n,tau,alpha,beta,cutoff=cutoff,outlier=True, outlierMethod='Simple', nOutliers=1)
+    point5, test5 , confInt5 = simulation(r,name,n,tau,alpha,beta,cutoff=cutoff,outlier=True, outlierMethod='Simple', nOutliers=2)
+    point6, test6 , confInt6 = simulation(r,'Noack',n,tau,L=40,cutoff=cutoff,b=0.5,outlier=False)
 
-    # Compute Root Mean Squared Error
-    rmse1 = compRMSE(simRes1, 2)
-    rmse2 = compRMSE(simRes2, 2)
-    rmse3 = compRMSE(simRes3, 2)
-    rmse4 = compRMSE(simRes4, 2)
-    rmse5 = compRMSE(simRes5, 2)
-    rmse6 = compRMSE(simRes6, 2)
-
-    # Create dataframe with results
-    result_1 = pd.DataFrame({'Mean':simRes1.mean(),'St. Dev.': simRes1.std(), 'RMSE':rmse1})
-    result_2 = pd.DataFrame({'Mean':simRes2.mean(),'St. Dev.': simRes2.std(), 'RMSE':rmse2})
-    result_3 = pd.DataFrame({'Mean':simRes3.mean(),'St. Dev.': simRes3.std(), 'RMSE':rmse3})
-    result_4 = pd.DataFrame({'Mean':simRes4.mean(),'St. Dev.': simRes4.std(), 'RMSE':rmse4})
-    result_5 = pd.DataFrame({'Mean':simRes5.mean(),'St. Dev.': simRes5.std(), 'RMSE':rmse5})
-    result_6 = pd.DataFrame({'Mean':simRes6.mean(),'St. Dev.': simRes6.std(), 'RMSE':rmse6})
     
-    # Create one dataframe with all results
-    multiCol1 = pd.MultiIndex.from_arrays([['Scenario 1', 'Scenario 1', 'Scenario 1',
-                                           'Scenario 2', 'Scenario 2', 'Scenario 2',
-                                           'Scenario 3', 'Scenario 3', 'Scenario 3'], 
+    # Create 2 dataframe with results about Mean, St.dev and RMSE 
+    multiCol1a = pd.MultiIndex.from_arrays([['Scenario 1', 'Scenario 1', 'Scenario 1',
+                                             'Scenario 2', 'Scenario 2', 'Scenario 2',
+                                             'Scenario 3', 'Scenario 3', 'Scenario 3'], 
                                            ['Mean','St.Var','RMSE',
                                             'Mean','St.Var','RMSE',
                                             'Mean','St.Var','RMSE',]])
-    multiCol2 = pd.MultiIndex.from_arrays([['Scenario 4', 'Scenario 4', 'Scenario 4',
-                                           'Scenario 5', 'Scenario 5', 'Scenario 5',
-                                           'Scenario 6', 'Scenario 6', 'Scenario 6'], 
+    multiCol1b = pd.MultiIndex.from_arrays([['Scenario 4', 'Scenario 4', 'Scenario 4',
+                                             'Scenario 5', 'Scenario 5', 'Scenario 5',
+                                             'Scenario 6', 'Scenario 6', 'Scenario 6'], 
                                             ['Mean','St.Var','RMSE',
-                                            'Mean','St.Var','RMSE',
-                                            'Mean','St.Var','RMSE']])
+                                             'Mean','St.Var','RMSE',
+                                             'Mean','St.Var','RMSE']])
     row = ['OLS', 'Huber', 'Tuckey', 'Donut']
-    Results1 = pd.DataFrame(np.transpose(np.array([simRes1.mean(),simRes1.std(),rmse1, 
-                                                  simRes2.mean(),simRes2.std(),rmse2, 
-                                                  simRes3.mean(),simRes3.std(),rmse3])),
-                                                    columns=multiCol1, index=row)
+    Results1a = pd.DataFrame(np.transpose(np.array([point1.mean(),point1.std(),compRMSE(point1, 2), 
+                                                    point2.mean(),point2.std(),compRMSE(point2, 2), 
+                                                    point3.mean(),point3.std(),compRMSE(point3, 2)])),
+                                                    columns=multiCol1a, index=row)
     
-    Results2 = pd.DataFrame(np.transpose(np.array([simRes4.mean(),simRes4.std(),rmse4, 
-                                                  simRes5.mean(),simRes5.std(),rmse5, 
-                                                  simRes6.mean(),simRes6.std(),rmse6])),
-                                                    columns=multiCol2, index=row)
-    return Results1 , Results2
+    Results1b = pd.DataFrame(np.transpose(np.array([point4.mean(),point4.std(),compRMSE(point4, 2), 
+                                                    point5.mean(),point5.std(),compRMSE(point5, 2), 
+                                                    point6.mean(),point6.std(),compRMSE(point6, 2)])),
+                                                    columns=multiCol1b, index=row)
+    
+    scenariosHist([point1, point2, point3, point4, point5, point6],True,'images/testfig1.png')
+
+
+    return Results1a , Results1b

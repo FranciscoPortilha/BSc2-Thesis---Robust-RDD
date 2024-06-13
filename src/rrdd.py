@@ -6,7 +6,7 @@ import statsmodels.api as sm
 
 
 
-def genExog(sample, intercept=False, jointFit=False):
+def prepExog(sample, intercept=False, jointFit=False):
     ''' 
     This method add prepares a sample to be used as exogenous variables in regression.
 
@@ -55,22 +55,23 @@ def fit(name, sample, intercept, cutoff=0, jointFit=False):
     res.params : object
         The parameters of the regression.
     '''
-    # Prepare sample
-    exog = genExog(sample,intercept,jointFit)    
 
     # Estimate regression based on estimation method
     if (name == 'Robust Huber'):
+        exog = prepExog(sample,intercept,jointFit)
         res = sm.RLM(sample.Y,exog,M=sm.robust.norms.HuberT())
            
     elif (name == 'Robust Tuckey'):
+        exog = prepExog(sample,intercept,jointFit)
         res = sm.RLM(sample.Y,exog,M=sm.robust.norms.TukeyBiweight())
 
     elif (name == 'OLS'):
+        exog = prepExog(sample,intercept,jointFit)
         res = sm.OLS(sample.Y,exog)
 
     elif (name == 'Donut'):
         sample = sample.loc[np.abs(sample.X-cutoff)>=0.1]
-        exog = genExog(sample,intercept,jointFit)
+        exog = prepExog(sample,intercept,jointFit)
         res = sm.OLS(sample.Y,exog.to_numpy())
         
     else:

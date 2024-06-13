@@ -239,17 +239,15 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1):
     # Simple generates to outlier(s) inside the donut stripe 
     if name == 'Simple':
         i = 0
-        for j in range(nOutliers):
-            found=True
+        for j in range (nOutliers):
+            found = True
             # Find first observation in the stripe and change outcome value to 2.5
-            while(found):
-                if (X[i] >= -delta) & (X[i] < 0):
+            while (found & ( i < len(X) ) ):
+                if ( X[i] >= -delta ) & (X[i] < 0):
                     Y[i] = 2.5
                     Outliers[i] = 1
                     found = False
-                    i=i+1
-                else: 
-                    i=i+1  
+                i = i+1  
 
     # Simple Outised generates to outlier(s) outside the donut stripe 
     if name == 'Simple Outside':
@@ -257,8 +255,8 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1):
         for j in range(nOutliers):
             found=True
             # Find first observation just outside the stripe and change outcome value to 2.5
-            while(found):
-                if (X[i] >= -2*delta) & (X[i] < -delta):
+            while ( found & ( i < len(X) ) ):
+                if ( X[i] >= -2*delta ) & ( X[i]< -delta ):
                     Y[i] = 2.5
                     Outliers[i] = 1
                     found = False
@@ -269,7 +267,7 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1):
 
 # Generation of the Sample X_i's and Y_i's 
 
-def genSample(name, n, tau=0,  alpha=0, beta=0,L=0,cutoff=0, outlier=False, outlierMethod='',nOutliers=1, printPlot=True):
+def genSample(name, n, tau=0,  alpha=0, beta=0,L=0,cutoff=0, outlier=False, outlierMethod='',nOutliers=1, printPlot=False):
     """
     Generate a sample for RDD analysis: running variables (X), outcomes (Y), and treatments (T)
 
@@ -301,7 +299,7 @@ def genSample(name, n, tau=0,  alpha=0, beta=0,L=0,cutoff=0, outlier=False, outl
     sample: DataFrame
         A dataframe object with the geneated Y (outcomes) and X (running variables) and given T (treatment variables)
     """
-    X = np.random.uniform(-1+cutoff,1+cutoff,n)
+    X = np.random.uniform ( -1 + cutoff, 1 + cutoff, n)
     Y = genY(name, X, tau, L, alpha, beta)
     Outliers = np.zeros_like(Y)
     if outlier == True:
