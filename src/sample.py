@@ -1,7 +1,7 @@
-import numpy as np
-import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 
 def sign(x):
@@ -15,13 +15,14 @@ def sign(x):
 
     Returns
     -------
-    sign: int 
+    sign: int
         Returns -1 if x is negative and 1 if nonnegative.
     """
-    if x<0:
+    if x < 0:
         return -1
     else:
         return 1
+
 
 def treatment(x):
     """
@@ -34,13 +35,14 @@ def treatment(x):
 
     Returns
     -------
-    treatment: int 
+    treatment: int
         Returns 0 if observation x does not receive treatment and 1 if it does receive treatment.
     """
-    if x<0:
+    if x < 0:
         return 0
     else:
         return 1
+
 
 def indicator(x):
     """
@@ -53,14 +55,13 @@ def indicator(x):
 
     Returns
     -------
-    treatment: int 
+    treatment: int
         Returns 1 if observation x is within the distance and 0 if it is not.
     """
-    if np.abs(x)<0.1:
+    if np.abs(x) < 0.1:
         return 1
     else:
         return 0
-
 
 
 def genT(X):
@@ -79,11 +80,12 @@ def genT(X):
     """
     T = {}
     for i in range(len(X)):
-        T = np.append(T,treatment(X[i]))
-    T = np.delete(T,0)
+        T = np.append(T, treatment(X[i]))
+    T = np.delete(T, 0)
     return T
-            
-def mu_noack(L,x):
+
+
+def mu_noack(L, x):
     """
     This function generates the non-random part of outcome function with the DGP used by Noack and Rothe (NR) (2023).
 
@@ -99,9 +101,12 @@ def mu_noack(L,x):
     mu: int
         Returns the non-random part of the outcome value for that observation.
     """
-    return sign(x)*np.power(x,2) - L*sign(x)*(np.power(x-0.1*sign(x),2)-np.power(0.1,2)*sign(x))*indicator(x)
+    return sign(x) * np.power(x, 2) - L * sign(x) * (
+        np.power(x - 0.1 * sign(x), 2) - np.power(0.1, 2) * sign(x)
+    ) * indicator(x)
 
-def genY_noack(L,X,epsilon):
+
+def genY_noack(L, X, epsilon):
     """
     This function generates a sample of outcomes (Y_i's) with the DGP used by Noack and Rothe (NR) (2023).
 
@@ -121,17 +126,18 @@ def genY_noack(L,X,epsilon):
     """
     Y = {}
     for i in range(len(X)):
-        Y = np.append(Y,mu_noack(L,X[i]) + epsilon[i])
-    Y = np.delete(Y,0)
+        Y = np.append(Y, mu_noack(L, X[i]) + epsilon[i])
+    Y = np.delete(Y, 0)
     return Y
 
-def mu_basicLinear(tau,alpha,beta,x): 
+
+def mu_basicLinear(tau, alpha, beta, x):
     """
     This function generates the non-random part of the outcome function with a basic linear potential outcomes framework DGP.
 
     Parameters
     ----------
-    tau : int 
+    tau : int
         The size of the treatment effect.
     alpha: int
         The intercept parameter of the equation.
@@ -145,15 +151,16 @@ def mu_basicLinear(tau,alpha,beta,x):
     mu: int
         Returns the non-random part the outcome value.
     """
-    return alpha + beta*x + tau*treatment(x)
+    return alpha + beta * x + tau * treatment(x)
 
-def genY_basicLinear(tau,alpha,beta,X,epsilon):
+
+def genY_basicLinear(tau, alpha, beta, X, epsilon):
     """
     This function generates a sample of outcomes (Y_i's) with a basic linear potential outcomes framework DGP.
 
     Parameters
     ----------
-    tau : int 
+    tau : int
         The size of the treatment effect.
     alpha: int
         The intercept parameter of the equation.
@@ -171,12 +178,14 @@ def genY_basicLinear(tau,alpha,beta,X,epsilon):
     """
     Y = {}
     for i in range(len(X)):
-        Y = np.append(Y,mu_basicLinear(tau,alpha,beta,X[i]) + epsilon[i])
-    Y = np.delete(Y,0)
+        Y = np.append(Y, mu_basicLinear(tau, alpha, beta, X[i]) + epsilon[i])
+    Y = np.delete(Y, 0)
     return Y
 
+
 # Generation of the Outcomes (Y_i) given the different DGP's
-                            
+
+
 def genY(name, X, tau=0, L=0, alpha=0, beta=0):
     """
     This function generates a sample of observations from the given DGP.
@@ -201,17 +210,18 @@ def genY(name, X, tau=0, L=0, alpha=0, beta=0):
     Y: arrray[int]
         Returns a vector with the outcome values.
     """
-    epsilon = np.random.normal(0,0.5,len(X))
-    if name == 'Noack':
-        Y = genY_noack(L,X,epsilon)
-    elif name == 'Basic Linear':
-        Y = genY_basicLinear(tau,alpha,beta,X,epsilon)
+    epsilon = np.random.normal(0, 0.5, len(X))
+    if name == "Noack":
+        Y = genY_noack(L, X, epsilon)
+    elif name == "Basic Linear":
+        Y = genY_basicLinear(tau, alpha, beta, X, epsilon)
     else:
-        return NameError('Type of GDP is not recognised')
+        return NameError("Type of GDP is not recognised")
     return Y
 
+
 def genOutlier(Y, X, name, nOutliers=1, delta=0.1):
-    ''' 
+    """
     This function generates outliers based on different methods
 
     Parameters
@@ -220,12 +230,12 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1):
         The sample of outcomes to generate the outlier(s) value(s) for.
     X : arrray[int]
         The sample of observation to generate the outlier(s) value(s) for.
-    name : string 
+    name : string
         The name of the method to generate the ouotlier(s).
         Option values: Simple, Simple Outside.
     nOutlier : int
         The number of outliers to generate.
-    delta : int  
+    delta : int
         The size of the donut stripe.
 
     Returns
@@ -234,40 +244,54 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1):
         The sample of outcomes with the outlier(s) value(s).
     Outliers : arrray[int]
         An array with 1 if outlier and 0 is not. (Used for coloring the dots on scatter plots)
-    '''
+    """
     Outliers = np.zeros_like(Y)
-    # Simple generates to outlier(s) inside the donut stripe 
-    if name == 'Simple':
-        i = 0
-        for j in range (nOutliers):
-            found = True
-            # Find first observation in the stripe and change outcome value to 2.5
-            while (found & ( i < len(X) ) ):
-                if ( X[i] >= -delta ) & (X[i] < 0):
-                    Y[i] = 2.5
-                    Outliers[i] = 1
-                    found = False
-                i = i+1  
-
-    # Simple Outised generates to outlier(s) outside the donut stripe 
-    if name == 'Simple Outside':
+    # Simple generates to outlier(s) inside the donut stripe
+    if name == "Simple":
         i = 0
         for j in range(nOutliers):
-            found=True
-            # Find first observation just outside the stripe and change outcome value to 2.5
-            while ( found & ( i < len(X) ) ):
-                if ( X[i] >= -2*delta ) & ( X[i]< -delta ):
+            found = True
+            # Find first observation in the stripe and change outcome value to 2.5
+            while found & (i < len(X)):
+                if (X[i] >= -delta) & (X[i] < 0):
                     Y[i] = 2.5
                     Outliers[i] = 1
                     found = False
-                    i=i+1
-                else: 
-                    i=i+1    
+                i = i + 1
+
+    # Simple Outised generates to outlier(s) outside the donut stripe
+    if name == "Simple Outside":
+        i = 0
+        for j in range(nOutliers):
+            found = True
+            # Find first observation just outside the stripe and change outcome value to 2.5
+            while found & (i < len(X)):
+                if (X[i] >= -2 * delta) & (X[i] < -delta):
+                    Y[i] = 2.5
+                    Outliers[i] = 1
+                    found = False
+                    i = i + 1
+                else:
+                    i = i + 1
     return Y, Outliers
 
-# Generation of the Sample X_i's and Y_i's 
 
-def genSample(name, n, tau=0,  alpha=0, beta=0,L=0,cutoff=0, outlier=False, outlierMethod='',nOutliers=1, printPlot=False):
+# Generation of the Sample X_i's and Y_i's
+
+
+def genSample(
+    name,
+    n,
+    tau=0,
+    alpha=0,
+    beta=0,
+    L=0,
+    cutoff=0,
+    outlier=False,
+    outlierMethod="",
+    nOutliers=1,
+    printPlot=False,
+):
     """
     Generate a sample for RDD analysis: running variables (X), outcomes (Y), and treatments (T)
 
@@ -299,24 +323,24 @@ def genSample(name, n, tau=0,  alpha=0, beta=0,L=0,cutoff=0, outlier=False, outl
     sample: DataFrame
         A dataframe object with the geneated Y (outcomes) and X (running variables) and given T (treatment variables)
     """
-    X = np.random.uniform ( -1 + cutoff, 1 + cutoff, n)
+    X = np.random.uniform(-1 + cutoff, 1 + cutoff, n)
     Y = genY(name, X, tau, L, alpha, beta)
     Outliers = np.zeros_like(Y)
     if outlier == True:
-        Y, Outliers  = genOutlier(Y,X,outlierMethod,nOutliers)
+        Y, Outliers = genOutlier(Y, X, outlierMethod, nOutliers)
     Tr = genT(X)
 
     # Create sample dataframe
-    sample = pd.DataFrame({'Y': Y,'X': X,'Treatment': Tr, 'Outlier': Outliers})
+    sample = pd.DataFrame({"Y": Y, "X": X, "Treatment": Tr, "Outlier": Outliers})
     sample.Y = sample.Y.astype(float)
     sample.Treatment = sample.Treatment.astype(float)
     sample.Outlier = sample.Outlier.astype(float)
 
     # Print plot
     if printPlot == True:
-        cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["grey","red"])
-        plt.scatter(X,Y,s=6,c=sample.Outlier, cmap=cmap)
-        plt.xlabel('$X_i$')
-        plt.ylabel('$Y_i$')
-        
+        cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["grey", "red"])
+        plt.scatter(X, Y, s=6, c=sample.Outlier, cmap=cmap)
+        plt.xlabel("$X_i$")
+        plt.ylabel("$Y_i$")
+
     return sample
