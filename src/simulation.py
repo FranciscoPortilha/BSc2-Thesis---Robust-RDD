@@ -60,13 +60,12 @@ def simulation(
     t_normal = [{}, {}, {}, {}], [{}, {}, {}, {}], [{}, {}, {}, {}]
     t_studT = [{}, {}, {}, {}], [{}, {}, {}, {}], [{}, {}, {}, {}]
 
-    ci_1 = [{}, {}, {}, {}]
-    ci_05 = [{}, {}, {}, {}]
-    ci_01 = [{}, {}, {}, {}]
+    ci_cove = [{}, {}, {}, {}], [{}, {}, {}, {}], [{}, {}, {}, {}]
+    ci_lenght = [{}, {}, {}, {}], [{}, {}, {}, {}], [{}, {}, {}, {}]
 
     models = ["OLS", "Robust Huber", "Robust Tuckey", "Donut"]
 
-    # Generate sample and fit models r times
+    # Generate sample, fit models and record results r times
     for k in range(r):
         # Generate a new sample
         sample = genSample(
@@ -86,7 +85,7 @@ def simulation(
         # Select part of the sample to be used according to bandwidth
         sample = sample.loc[np.abs(sample.X - cutoff) <= b]
 
-        # Estimate the different models are record results
+        # Estimate the different models and record results
         for i in range(len(models)):
             # Fit the model
             res = jointFitRD(models[i], sample)
@@ -94,7 +93,7 @@ def simulation(
             # Record point estimate
             bias[i] = np.append(bias[i], res.params.iloc[2] - tau)
 
-            # Calculate t test of Ho: t == tau is rejected based on normal and student-t
+            # Record if t test of Ho: t == tau is rejected based on normal and student-t
             useStudentT = False
             for t in t_normal, t_studT:
                 if (tau == 0) & (useStudentT == False):
@@ -133,25 +132,43 @@ def simulation(
             if (res.conf_int(0.1)[0].iloc[2] < tau) & (
                 tau < res.conf_int(0.1)[1].iloc[2]
             ):
-                ci_1[i] = np.append(ci_1[i], 1)
-                ci_05[i] = np.append(ci_05[i], 1)
-                ci_01[i] = np.append(ci_01[i], 1)
+                # Correct coverage all levels
+                ci_cove[0][i] = np.append(ci_cove[0][i], 1)
+                ci_cove[1][i] = np.append(ci_cove[1][i], 1)
+                ci_cove[2][i] = np.append(ci_cove[2][i], 1)
 
             elif (res.conf_int()[0].iloc[2] < tau) & (tau < res.conf_int()[1].iloc[2]):
-                ci_1[i] = np.append(ci_1[i], 0)
-                ci_05[i] = np.append(ci_05[i], 1)
-                ci_01[i] = np.append(ci_01[i], 1)
+                # Incorrect coverage 0.1 level
+                ci_cove[0][i] = np.append(ci_cove[0][i], 0)
+                ci_cove[1][i] = np.append(ci_cove[1][i], 1)
+                ci_cove[2][i] = np.append(ci_cove[2][i], 1)
 
             elif (res.conf_int(0.01)[0].iloc[2] < tau) & (
                 tau < res.conf_int(0.01)[1].iloc[2]
             ):
-                ci_1[i] = np.append(ci_1[i], 0)
-                ci_05[i] = np.append(ci_05[i], 0)
-                ci_01[i] = np.append(ci_01[i], 1)
+                # Incorrect coverage 0.1 and 0.5 level
+                ci_cove[0][i] = np.append(ci_cove[0][i], 0)
+                ci_cove[1][i] = np.append(ci_cove[1][i], 0)
+                ci_cove[2][i] = np.append(ci_cove[2][i], 1)
+
             else:
-                ci_1[i] = np.append(ci_1[i], 0)
-                ci_05[i] = np.append(ci_05[i], 0)
-                ci_01[i] = np.append(ci_01[i], 0)
+                # Incorrect coverage on all levels
+                ci_cove[0][i] = np.append(ci_cove[0][i], 0)
+                ci_cove[1][i] = np.append(ci_cove[1][i], 0)
+                ci_cove[2][i] = np.append(ci_cove[2][i], 0)
+
+            # Record lenght of C.I. for all significance levels
+            ci_lenght[0][i] = np.append(
+                ci_lenght[0][i],
+                res.conf_int(0.1)[1].iloc[2] - res.conf_int(0.1)[0].iloc[2],
+            )
+            ci_lenght[1][i] = np.append(
+                ci_lenght[1][i], res.conf_int()[1].iloc[2] - res.conf_int()[0].iloc[2]
+            )
+            ci_lenght[2][i] = np.append(
+                ci_lenght[2][i],
+                res.conf_int(0.01)[1].iloc[2] - res.conf_int(0.01)[0].iloc[2],
+            )
 
     # Adjust the format of the arrays (delete empty first cell)
     for i in range(len(models)):
@@ -160,22 +177,23 @@ def simulation(
             t[0][i] = np.delete(t[0][i], 0)
             t[1][i] = np.delete(t[1][i], 0)
             t[2][i] = np.delete(t[2][i], 0)
+        for c in ci_cove, ci_lenght:
+            c[0][i] = np.delete(c[0][i], 0)
+            c[1][i] = np.delete(c[1][i], 0)
+            c[2][i] = np.delete(c[2][i], 0)
 
-        ci_1[i] = np.delete(ci_1[i], 0)
-        ci_05[i] = np.delete(ci_05[i], 0)
-        ci_01[i] = np.delete(ci_01[i], 0)
-
-    # Create dataframes with results from the simulation
+    # Create dataframe with point estimation results from the simulation
     pointEstimation = pd.DataFrame(
         {"OLS": bias[0], "Huber": bias[1], "Tukey": bias[2], "Donut": bias[3]}
     )
 
-    testValues = []
-    k=0
+    # Create dataframes with t-test results from the simulation
+    testValues = ["", ""]
+    k = 0
     for t in t_normal, t_studT:
         testValues_1 = pd.DataFrame(
             {
-                "OLS":   t[0][0],
+                "OLS": t[0][0],
                 "Huber": t[0][1],
                 "Tukey": t[0][2],
                 "Donut": t[0][3],
@@ -183,7 +201,7 @@ def simulation(
         )
         testValues_05 = pd.DataFrame(
             {
-                "OLS":   t[1][0],
+                "OLS": t[1][0],
                 "Huber": t[1][1],
                 "Tukey": t[1][2],
                 "Donut": t[1][3],
@@ -191,29 +209,33 @@ def simulation(
         )
         testValues_01 = pd.DataFrame(
             {
-                "OLS":   t[2][0],
+                "OLS": t[2][0],
                 "Huber": t[2][1],
                 "Tukey": t[2][2],
                 "Donut": t[2][3],
             }
         )
         testValues[k] = [testValues_1, testValues_05, testValues_01]
-        k=k+1
+        k = k + 1
 
-    ciCoverage_1 = pd.DataFrame(
-        {"OLS": ci_1[0], "Huber": ci_1[1], "Tukey": ci_1[2], "Donut": ci_1[3]}
-    )
-    ciCoverage_05 = pd.DataFrame(
-        {"OLS": ci_05[0], "Huber": ci_05[1], "Tukey": ci_05[2], "Donut": ci_05[3]}
-    )
-    ciCoverage_01 = pd.DataFrame(
-        {"OLS": ci_01[0], "Huber": ci_01[1], "Tukey": ci_01[2], "Donut": ci_01[3]}
-    )
-
-    ciCoverage = [ciCoverage_1, ciCoverage_05, ciCoverage_01]
+    # Create dataframes with C.I. results from the simulation
+    ciValues = ["", ""]
+    i = 0
+    for c in ci_cove, ci_lenght:
+        ciValues_1 = pd.DataFrame(
+            {"OLS": c[0][0], "Huber": c[0][1], "Tukey": c[0][2], "Donut": c[0][3]}
+        )
+        ciValues_05 = pd.DataFrame(
+            {"OLS": c[1][0], "Huber": c[1][1], "Tukey": c[1][2], "Donut": c[1][3]}
+        )
+        ciValues_01 = pd.DataFrame(
+            {"OLS": c[2][0], "Huber": c[2][1], "Tukey": c[2][2], "Donut": c[2][3]}
+        )
+        ciValues[i] = [ciValues_1, ciValues_05, ciValues_01]
+        i = i + 1
 
     # Return results
-    return pointEstimation, testValues, ciCoverage
+    return pointEstimation, testValues, ciValues
 
 
 def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
@@ -319,6 +341,34 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
         "Scenario 5",
         "Scenario 5",
         "Scenario 5",
+        "Scenario 6",
+        "Scenario 6",
+        "Scenario 6",
+    ]
+    labelsScenariosA_4 = [
+        "Scenario 1",
+        "Scenario 1",
+        "Scenario 1",
+        "Scenario 1",
+        "Scenario 2",
+        "Scenario 2",
+        "Scenario 2",
+        "Scenario 2",
+        "Scenario 3",
+        "Scenario 3",
+        "Scenario 3",
+        "Scenario 3",
+    ]
+    labelsScenariosB_4 = [
+        "Scenario 4",
+        "Scenario 4",
+        "Scenario 4",
+        "Scenario 4",
+        "Scenario 5",
+        "Scenario 5",
+        "Scenario 5",
+        "Scenario 5",
+        "Scenario 6",
         "Scenario 6",
         "Scenario 6",
         "Scenario 6",
@@ -455,20 +505,21 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
         index=row,
     )
 
-    labelsResults3 = [
-        "T-Test - T1 error",
-        "T-Test - T1 error",
-        "Confidence Interval",
-        "Confidence Interval",
-        "T-Test - T1 error",
-        "T-Test - T1 error",
-        "Confidence Interval",
-        "Confidence Interval",
-        "T-Test - T1 error",
-        "T-Test - T1 error",
-        "Confidence Interval",
-        "Confidence Interval",
-    ], [
+    labelsResults3_u = [
+        "T-Test - T.I",
+        "T-Test - T.I",
+        "C.I.",
+        "C.I.",
+        "T-Test - T.I",
+        "T-Test - T.I",
+        "C.I.",
+        "C.I.",
+        "T-Test - T.I",
+        "T-Test - T.I",
+        "C.I.",
+        "C.I.",
+    ]
+    labelsResults3_b = [
         "N",
         "St-t",
         "C.C",
@@ -484,14 +535,16 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
     ]
     labelsResults3a = pd.MultiIndex.from_arrays(
         [
-            labelsScenariosA,
-            labelsResults3,
+            labelsScenariosA_4,
+            labelsResults3_u,
+            labelsResults3_b,
         ]
     )
     labelsResults3b = pd.MultiIndex.from_arrays(
         [
-            labelsScenariosB,
-            labelsResults3,
+            labelsScenariosB_4,
+            labelsResults3_u,
+            labelsResults3_b,
         ]
     )
 
@@ -503,17 +556,42 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
                 [
                     test1[0][0].mean(),
                     test1[1][0].mean(),
-                    1[][].mean(),
+                    confInt1[0][0].mean(),
+                    confInt1[1][0].mean(),
                     test2[0][0].mean(),
                     test2[1][0].mean(),
-                    t2[][].mean(),
+                    confInt2[0][0].mean(),
+                    confInt2[1][0].mean(),
                     test3[0][0].mean(),
                     test3[1][0].mean(),
-                    3[][].mean(),
+                    confInt3[0][0].mean(),
+                    confInt3[1][0].mean(),
                 ]
             )
         ),
         columns=labelsResults3a,
+        index=row,
+    )
+    Results3b_1 = pd.DataFrame(
+        np.transpose(
+            np.array(
+                [
+                    test4[0][0].mean(),
+                    test4[1][0].mean(),
+                    confInt4[0][0].mean(),
+                    confInt4[1][0].mean(),
+                    test5[0][0].mean(),
+                    test5[1][0].mean(),
+                    confInt5[0][0].mean(),
+                    confInt5[1][0].mean(),
+                    test6[0][0].mean(),
+                    test6[1][0].mean(),
+                    confInt6[0][0].mean(),
+                    confInt6[1][0].mean(),
+                ]
+            )
+        ),
+        columns=labelsResults3b,
         index=row,
     )
 
@@ -526,6 +604,11 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
         "Jarque-Bera test statistic of the simulated point estimates. "
         + "T-test incorrect rejection of $H_0: \\hat{\\tau}=\\tau$ (normal and student's-t distributions)"
     )
+    caption3 = (
+        "Type I error of t-test statistic of the simulated point estimates for $h_0:\\hat{\\tau}=\\tau$, "
+        + "based on normal and student's-t distribuitions. Correct coverage of the confidence intervals "
+        + "and lenght. For significance level of $\\alpha=0.1$"
+    )
 
     # Plot figures and print latex tables
     scenariosHist(
@@ -533,5 +616,9 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
         True,
         "images/scenariosHist.png",
     )
-    toLatexTable(r, n, Results1a, Results1b, caption1, ref="table:R1")
-    toLatexTable(r, n, Results2a, Results2b, caption2, ref="table:R2")
+    toLatexTable(Results1a, Results1b, caption1, ref="table:R1")
+    toLatexTable(Results2a, Results2b, caption2, ref="table:R2")
+    toLatexTable(Results3a_1, Results3b_1, caption3, ref="table:R3_1")
+
+    print("n = "+str(n)+' , r = '+str(r))
+    print('--------- Thank you for running my thesis project ---------')

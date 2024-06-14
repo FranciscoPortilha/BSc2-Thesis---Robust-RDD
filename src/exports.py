@@ -5,7 +5,7 @@ import statsmodels.api as sm
 import statsmodels.stats.stattools as st
 
 
-def toLatexTable(r, n, results1, results2="", caption="", ref=""):
+def toLatexTable(results1, results2="", caption="", ref=""):
     """
     This method prints latex code for a table with the results.
 
@@ -19,7 +19,7 @@ def toLatexTable(r, n, results1, results2="", caption="", ref=""):
             label=ref,
         )
     )
-    if any(results2 != ""):
+    if any(results2):
         print(
             results2.to_latex(
                 float_format="{:.3f}".format,
@@ -28,7 +28,6 @@ def toLatexTable(r, n, results1, results2="", caption="", ref=""):
                 label=ref,
             )
         )
-    print("r = " + str(r) + " , n = " + str(n))
 
 
 def scenariosHist(series, saveFig=False, figPath=""):
