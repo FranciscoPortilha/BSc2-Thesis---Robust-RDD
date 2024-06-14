@@ -33,7 +33,8 @@ def toLatexTable(r, n, results1, results2="", caption="", ref=""):
 
 def scenariosHist(series, saveFig=False, figPath=""):
     """
-    This function plot the histogram of the serie with a pdf of a normal function with equal mean and st.dev.
+    This function plot the histogram of the serie with a pdf of a normal function with 
+    equal mean and st.dev.
 
     Parameters
     ----------

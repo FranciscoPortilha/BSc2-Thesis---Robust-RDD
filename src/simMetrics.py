@@ -15,6 +15,32 @@ def compRMSE(pointEstimation, trueValue):
     ]
 
 
+def compSkew(pointEstimation):
+    """
+    This method computes the skweness of the point estimation for all estimation mathods.
+    """
+
+    return [
+        st.jarque_bera(pointEstimation.OLS)[2],
+        st.jarque_bera(pointEstimation.Huber)[2],
+        st.jarque_bera(pointEstimation.Tukey)[2],
+        st.jarque_bera(pointEstimation.Donut)[2],
+    ]
+
+
+def compKurt(pointEstimation):
+    """
+    This method computes the skweness of the point estimation for all estimation mathods.
+    """
+
+    return [
+        st.jarque_bera(pointEstimation.OLS)[3],
+        st.jarque_bera(pointEstimation.Huber)[3],
+        st.jarque_bera(pointEstimation.Tukey)[3],
+        st.jarque_bera(pointEstimation.Donut)[3],
+    ]
+
+
 def compJB(pointEstimation):
     """
     This method computes the jarque-bera test for all estimation mathods.

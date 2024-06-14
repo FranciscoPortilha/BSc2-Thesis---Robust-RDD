@@ -4,7 +4,7 @@ import pandas as pd
 from src.exports import scenariosHist, toLatexTable
 from src.rrdd import jointFitRD
 from src.sample import genSample
-from src.simMetrics import compJB, compRMSE
+from src.simMetrics import compJB, compKurt, compRMSE, compSkew
 
 
 def simulation(
@@ -22,7 +22,8 @@ def simulation(
     nOutliers=0,
 ):
     """
-    Run simulation analysis for RDD: Generates a sample r times and returns the results of each sample
+    Run simulation analysis for RDD: Generates a sample r times and returns the results
+    of each sample.
 
     Parameters
     ----------
@@ -35,7 +36,8 @@ def simulation(
     tau : int , Default value: 0
         The size of the treatment effect. For basic and basic linear model.
     L : int, Default value: 0
-        The parameter used by NR to define the level of misspecification L={0,10,20,30,40}. For the Noack and Rothe model.
+        The parameter used by NR to define the level of misspecification L={0,10,20,30,40}.
+        For the Noack and Rothe model.
     cutoff : int , Default value: 0
         The treshold of the running variable that determines treatment
     b : int , Default value: 1
@@ -55,9 +57,15 @@ def simulation(
 
     bias = [{}, {}, {}, {}]
 
-    p_1 = [{}, {}, {}, {}]
-    p_05 = [{}, {}, {}, {}]
-    p_01 = [{}, {}, {}, {}]
+    t_1_normal = [{}, {}, {}, {}]
+    t_05_normal = [{}, {}, {}, {}]
+    t_01_normal = [{}, {}, {}, {}]
+
+    t_1_studT = [{}, {}, {}, {}]
+    t_05_studT = [{}, {}, {}, {}]
+    t_01_studT = [{}, {}, {}, {}]
+    
+    t_studT = [{}, {}, {}, {}],[{}, {}, {}, {}],[{}, {}, {}, {}]
 
     ci_1 = [{}, {}, {}, {}]
     ci_05 = [{}, {}, {}, {}]
@@ -100,24 +108,24 @@ def simulation(
 
             # Record if t test of Ho: t == tau is rejected
             if p >= 0.1:
-                p_1[i] = np.append(p_1[i], 0)
-                p_05[i] = np.append(p_05[i], 0)
-                p_01[i] = np.append(p_01[i], 0)
+                t_1_normal[i] = np.append(t_1_normal[i], 0)
+                t_05_normal[i] = np.append(t_05_normal[i], 0)
+                t_01_normal[i] = np.append(t_01_normal[i], 0)
 
             elif p >= 0.05:
-                p_1[i] = np.append(p_1[i], 1)
-                p_05[i] = np.append(p_05[i], 0)
-                p_01[i] = np.append(p_01[i], 0)
+                t_1_normal[i] = np.append(t_1_normal[i], 1)
+                t_05_normal[i] = np.append(t_05_normal[i], 0)
+                t_01_normal[i] = np.append(t_01_normal[i], 0)
 
             elif p >= 0.01:
-                p_1[i] = np.append(p_1[i], 1)
-                p_05[i] = np.append(p_05[i], 1)
-                p_01[i] = np.append(p_01[i], 0)
+                t_1_normal[i] = np.append(t_1_normal[i], 1)
+                t_05_normal[i] = np.append(t_05_normal[i], 1)
+                t_01_normal[i] = np.append(t_01_normal[i], 0)
 
             else:
-                p_1[i] = np.append(p_1[i], 1)
-                p_05[i] = np.append(p_05[i], 1)
-                p_01[i] = np.append(p_01[i], 1)
+                t_1_normal[i] = np.append(t_1_normal[i], 1)
+                t_05_normal[i] = np.append(t_05_normal[i], 1)
+                t_01_normal[i] = np.append(t_01_normal[i], 1)
 
             # Record correct coverage of confidence interval
             if (res.conf_int(0.1)[0].iloc[2] < tau) & (
@@ -147,9 +155,9 @@ def simulation(
     for i in range(len(models)):
         bias[i] = np.delete(bias[i], 0)
 
-        p_1[i] = np.delete(p_1[i], 0)
-        p_05[i] = np.delete(p_05[i], 0)
-        p_01[i] = np.delete(p_01[i], 0)
+        t_1_normal[i] = np.delete(t_1_normal[i], 0)
+        t_05_normal[i] = np.delete(t_05_normal[i], 0)
+        t_01_normal[i] = np.delete(t_01_normal[i], 0)
 
         ci_1[i] = np.delete(ci_1[i], 0)
         ci_05[i] = np.delete(ci_05[i], 0)
@@ -161,13 +169,13 @@ def simulation(
     )
 
     testValues_1 = pd.DataFrame(
-        {"OLS": p_1[0], "Huber": p_1[1], "Tukey": p_1[2], "Donut": p_1[3]}
+        {"OLS": t_1_normal[0], "Huber": t_1_normal[1], "Tukey": t_1_normal[2], "Donut": t_1_normal[3]}
     )
     testValues_05 = pd.DataFrame(
-        {"OLS": p_05[0], "Huber": p_05[1], "Tukey": p_05[2], "Donut": p_05[3]}
+        {"OLS": t_05_normal[0], "Huber": t_05_normal[1], "Tukey": t_05_normal[2], "Donut": t_05_normal[3]}
     )
     testValues_01 = pd.DataFrame(
-        {"OLS": p_01[0], "Huber": p_01[1], "Tukey": p_01[2], "Donut": p_01[3]}
+        {"OLS": t_01_normal[0], "Huber": t_01_normal[1], "Tukey": t_01_normal[2], "Donut": t_01_normal[3]}
     )
 
     ciCoverage_1 = pd.DataFrame(
@@ -200,7 +208,8 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
     tau : int , Default value: 0
         The size of the treatment effect. For basic and basic linear model.
     L : int, Default value: 0
-        The parameter used by Noack and Rothe to define the level of misspecification L={0,10,20,30,40}.
+        The parameter used by Noack and Rothe to define the level of misspecification,
+        L={0,10,20,30,40}.
     alpha: int, Default value: 0
         The intercept parameter of the equation. For basic linear model.
     beta: int, Default value: 0
@@ -270,60 +279,55 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
         r, "Noack", n, tau=0, L=40, cutoff=cutoff, b=0.5, outlier=False
     )
 
-    # Create labels for dataframe with results about Mean, St.dev and RMSE
-    multiCol1a = pd.MultiIndex.from_arrays(
-        [
-            [
-                "Scenario 1",
-                "Scenario 1",
-                "Scenario 1",
-                "Scenario 2",
-                "Scenario 2",
-                "Scenario 2",
-                "Scenario 3",
-                "Scenario 3",
-                "Scenario 3",
-            ],
-            [
-                "Bias",
-                "St.Dev.",
-                "RMSE",
-                "Bias",
-                "St.Dev.",
-                "RMSE",
-                "Bias",
-                "St.Dev.",
-                "RMSE",
-            ],
-        ]
-    )
-    multiCol1b = pd.MultiIndex.from_arrays(
-        [
-            [
-                "Scenario 4",
-                "Scenario 4",
-                "Scenario 4",
-                "Scenario 5",
-                "Scenario 5",
-                "Scenario 5",
-                "Scenario 6",
-                "Scenario 6",
-                "Scenario 6",
-            ],
-            [
-                "Bias",
-                "St.Dev.",
-                "RMSE",
-                "Bias",
-                "St.Dev.",
-                "RMSE",
-                "Bias",
-                "St.Dev.",
-                "RMSE",
-            ],
-        ]
-    )
+    # Create lables that are used in multiple tables
+    labelsScenariosA = [
+        "Scenario 1",
+        "Scenario 1",
+        "Scenario 1",
+        "Scenario 2",
+        "Scenario 2",
+        "Scenario 2",
+        "Scenario 3",
+        "Scenario 3",
+        "Scenario 3",
+    ]
+    labelsScenariosB = [
+        "Scenario 4",
+        "Scenario 4",
+        "Scenario 4",
+        "Scenario 5",
+        "Scenario 5",
+        "Scenario 5",
+        "Scenario 6",
+        "Scenario 6",
+        "Scenario 6",
+    ]
     row = ["OLS", "Huber", "Tuckey", "Donut"]
+
+    # Create labels for dataframe with results about Mean, St.dev and RMSE
+    labelsResults1 = [
+                "Bias",
+                "St.Dev.",
+                "RMSE",
+                "Bias",
+                "St.Dev.",
+                "RMSE",
+                "Bias",
+                "St.Dev.",
+                "RMSE",
+            ]
+    labelsResults1a = pd.MultiIndex.from_arrays(
+        [
+            labelsScenariosA,
+            labelsResults1,
+        ]
+    )
+    labelsResults1b = pd.MultiIndex.from_arrays(
+        [
+            labelsScenariosB,
+            labelsResults1,
+        ]
+    )
 
     # Create 2 dataframes with results about Mean, St.dev and RMSE
     Results1a = pd.DataFrame(
@@ -342,7 +346,7 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
                 ]
             )
         ),
-        columns=multiCol1a,
+        columns=labelsResults1a,
         index=row,
     )
     Results1b = pd.DataFrame(
@@ -361,128 +365,147 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
                 ]
             )
         ),
-        columns=multiCol1b,
+        columns=labelsResults1b,
         index=row,
     )
 
-    # Create labels for dataframe with results about JB and t-test (Normal and student-t)
-    multiCol1a = pd.MultiIndex.from_arrays(
+    # Create labels for dataframe with results about skewness kurtosis and JB test
+    labelsResults2 = [
+                "Kurt",
+                "Skew",
+                "JB",
+                "Kurt",
+                "Skew",
+                "JB",
+                "Kurt",
+                "Skew",
+                "JB",
+            ]
+    labelsTable2a = pd.MultiIndex.from_arrays(
         [
-            [
-                "Scenario 1",
-                "Scenario 1",
-                "Scenario 1",
-                "Scenario 2",
-                "Scenario 2",
-                "Scenario 2",
-                "Scenario 3",
-                "Scenario 3",
-                "Scenario 3",
-            ],
-            [
-                "",
-                "T-Test - T1 error",
-                "T-Test - T1 error",
-                "",
-                "T-Test - T1 error",
-                "T-Test - T1 error",
-                "",
-                "T-Test - T1 error",
-                "T-Test - T1 error",
-            ],
-            [
-                "JB",
-                "Normal",
-                "Student-t",
-                "JB",
-                "Normal",
-                "Student-t",
-                "JB",
-                "Normal",
-                "Student-t",
-            ],
+            labelsScenariosA,
+            labelsResults2,
         ]
     )
-    multiCol1b = pd.MultiIndex.from_arrays(
+    labelsTables2b = pd.MultiIndex.from_arrays(
         [
-            [
-                "Scenario 4",
-                "Scenario 4",
-                "Scenario 4",
-                "Scenario 5",
-                "Scenario 5",
-                "Scenario 5",
-                "Scenario 6",
-                "Scenario 6",
-                "Scenario 6",
-            ],
-            [
-                "",
-                "T-Test - T1 error",
-                "T-Test - T1 error",
-                "",
-                "T-Test - T1 error",
-                "T-Test - T1 error",
-                "",
-                "T-Test - T1 error",
-                "T-Test - T1 error",
-            ],
-            ["JB", "N", "St-t", "JB", "N", "St-t", "JB", "N", "St-t"],
+            labelsScenariosB,
+            labelsResults2,
         ]
     )
 
-    row = ["OLS", "Huber", "Tuckey", "Donut"]
-
-    # Create 2 dataframes with results about JB and t-test (Normal and student-t) (0.1 significance)
-    Results2a_1 = pd.DataFrame(
+    # Create 2 dataframes with results about skewness kurtosis and JB test
+    Results2a = pd.DataFrame(
         np.transpose(
             np.array(
                 [
+                    compSkew(point1),
+                    compKurt(point1),
                     compJB(point1),
-                    test1[0].mean(),
-                    test1[0].mean(),
+                    compSkew(point2),
+                    compKurt(point2),
                     compJB(point2),
-                    test2[0].mean(),
-                    test1[0].mean(),
+                    compSkew(point3),
+                    compKurt(point3),
                     compJB(point3),
-                    test3[0].mean(),
-                    test1[0].mean(),
                 ]
             )
         ),
-        columns=multiCol1a,
+        columns=labelsTable2a,
         index=row,
     )
-
-    Results2b_1 = pd.DataFrame(
+    Results2b = pd.DataFrame(
         np.transpose(
             np.array(
                 [
+                    compSkew(point4),
+                    compKurt(point4),
                     compJB(point4),
-                    test4[0].mean(),
-                    test1[0].mean(),
+                    compSkew(point5),
+                    compKurt(point5),
                     compJB(point5),
-                    test5[0].mean(),
-                    test1[0].mean(),
+                    compSkew(point6),
+                    compKurt(point6),
                     compJB(point6),
-                    test6[0].mean(),
-                    test1[0].mean(),
                 ]
             )
         ),
-        columns=multiCol1b,
+        columns=labelsTables2b,
+        index=row,
+    )
+
+    labelsResults3 = [
+                "T-Test - T1 error",
+                "T-Test - T1 error",
+                "Confidence Interval",
+                "Confidence Interval",
+                "T-Test - T1 error",
+                "T-Test - T1 error",
+                "Confidence Interval",
+                "Confidence Interval",
+                "T-Test - T1 error",
+                "T-Test - T1 error",
+                "Confidence Interval",
+                "Confidence Interval",
+            ],[
+                "N",
+                "St-t",
+                "C.C",
+                "Size",
+                "N",
+                "St-t",
+                "C.C",
+                "Size",
+                "N",
+                "St-t",
+                "C.C",
+                "Size",
+            ]
+    
+    labelsTable3a = pd.MultiIndex.from_arrays(
+        [
+            labelsScenariosA,
+            labelsResults3,
+        ]
+    )
+
+    # Create 2 dataframes with results about Type 1 error of t-test (Normal and st.-t)
+    # And correct coverage of C.I. and it's lenght
+    Results3a_1 = pd.DataFrame(
+        np.transpose(
+            np.array(
+                [
+                    compSkew(point1),
+                    compKurt(point1),
+                    compJB  (point1),
+                    compSkew(point2),
+                    compKurt(point2),
+                    compJB  (point2),
+                    compSkew(point3),
+                    compKurt(point3),
+                    compJB  (point3),
+                ]
+            )
+        ),
+        columns=labelsTable2a,
         index=row,
     )
 
     # Captions for latex tablex
-    caption1 = "Bias, standard deviation and root mean squared error of the point estimates of the treatment effect"
-    caption2 = ("Jarque-Bera test statistic of the simulated point estimates.",)
-    "T-test incorrect rejection of $H_0: \\hat{\\tau}=\\tau$ (normal and student's-t distributions)"
+    caption1 = (
+        "Bias, standard deviation and root mean squared error of the point estimates"
+        + "of the treatment effect"
+    )
+    caption2 = (
+        "Jarque-Bera test statistic of the simulated point estimates. "
+        + "T-test incorrect rejection of $H_0: \\hat{\\tau}=\\tau$ (normal and student's-t distributions)"
+    )
 
+    # Plot figures and print latex tables
     scenariosHist(
         [point1, point2, point3, point4, point5, point6],
         True,
         "images/scenariosHist.png",
     )
     toLatexTable(r, n, Results1a, Results1b, caption1, ref="table:R1")
-    toLatexTable(r, n, Results2a_1, Results2b_1, caption2, ref="table:R2_1")
+    toLatexTable(r, n, Results2a, Results2b, caption2, ref="table:R2")

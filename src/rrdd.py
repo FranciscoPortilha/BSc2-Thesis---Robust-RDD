@@ -36,7 +36,8 @@ def prepExog(sample, intercept=False, jointFit=False):
 
 def fit(name, sample, intercept, cutoff=0, jointFit=False):
     """
-    This method will fit a regression based on the different estimation methods on the given sample.
+    This method will fit a regression based on the different estimation methods
+    for the given sample.
 
     Parameters
     ----------
