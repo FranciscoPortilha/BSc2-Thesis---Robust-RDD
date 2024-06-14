@@ -442,14 +442,14 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
 
     # Create labels for dataframe with results about skewness kurtosis and JB test
     labelsResults2 = [
-        "Kurt",
         "Skew",
+        "Kurt",
         "JB",
-        "Kurt",
         "Skew",
+        "Kurt",
         "JB",
-        "Kurt",
         "Skew",
+        "Kurt",
         "JB",
     ]
     labelsResults2a = pd.MultiIndex.from_arrays(
@@ -597,7 +597,7 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
 
     # Captions for latex tablex
     caption1 = (
-        "Bias, standard deviation and root mean squared error of the point estimates"
+        "Bias, standard deviation and root mean squared error of the point estimates "
         + "of the treatment effect"
     )
     caption2 = (
@@ -606,7 +606,7 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
     )
     caption3 = (
         "Type I error of t-test statistic of the simulated point estimates for $h_0:\\hat{\\tau}=\\tau$, "
-        + "based on normal and student's-t distribuitions. Correct coverage of the confidence intervals "
+        + "based on normal and student's-t distributions. Correct coverage of the confidence intervals "
         + "and lenght. For significance level of $\\alpha=0.1$"
     )
 
