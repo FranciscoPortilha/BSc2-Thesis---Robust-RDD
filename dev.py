@@ -33,7 +33,7 @@ import pandas as pd
 ##
 # exp.scenariosHist(p, True, 'images/testfig1.png')
 
-r = 100
+r = 10
 n = 250
 
 sim.simulations(r, "Basic Linear", n, tau=2, alpha=-1, beta=1, cutoff=0)

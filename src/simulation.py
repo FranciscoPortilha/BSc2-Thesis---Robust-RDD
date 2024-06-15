@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from src.exports import scenariosHist, toLatexTable
+from src.exports import plotSamplesComparison, plotScenariosHist, toLatexTable
 from src.rrdd import jointFitRD
 from src.sample import genSample
 from src.simMetrics import compJB, compKurt, compRMSE, compSkew
@@ -23,7 +23,7 @@ def simulation(
 ):
     """
     Run simulation analysis for RDD: Generates a sample r times and returns the results
-    of each sample.
+    of each sample. Also returns the first sample.
 
     Parameters
     ----------
@@ -49,9 +49,18 @@ def simulation(
 
     Returns
     -------
-    sample: DataFrame
-        A dataframe object with the results from the simulation.
-        For each smaple it returns the estimated Treatment Effects (TE), bandwidth (H).
+    pointEstimation: DataFrame
+        A dataframe object with the point estimation results from the simulation.
+        Values are stored as bias relative to the true value.
+    testValues: DataFrame
+        A dataframe object with the results about the type I error of t-tests.
+        Includes two dataframes one with results based on normal and one based on t distr.
+        Values are stored as 1 for rejection of a correct null.
+    ciValues: DataFrame
+        A dataframe object with the results about the confidence intervals.
+        Values are stored as 1 for correct coverage.
+    firstSample: DataFrame
+        A dataframe object with the first sample generated.
     """
 
     # Creat empty output arrays
@@ -64,6 +73,7 @@ def simulation(
     ci_lenght = [{}, {}, {}, {}], [{}, {}, {}, {}], [{}, {}, {}, {}]
 
     models = ["OLS", "Robust Huber", "Robust Tuckey", "Donut"]
+    firstSample = []
 
     # Generate sample, fit models and record results r times
     for k in range(r):
@@ -85,6 +95,9 @@ def simulation(
         # Select part of the sample to be used according to bandwidth
         sample = sample.loc[np.abs(sample.X - cutoff) <= b]
 
+        # Store first sample for comparison
+        if k == 0:
+            firstSample = sample
         # Estimate the different models and record results
         for i in range(len(models)):
             # Fit the model
@@ -235,7 +248,7 @@ def simulation(
         i = i + 1
 
     # Return results
-    return pointEstimation, testValues, ciValues
+    return pointEstimation, testValues, ciValues, firstSample
 
 
 def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
@@ -267,10 +280,10 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
 
     """
     # Run Simulations
-    point1, test1, confInt1 = simulation(
+    point1, test1, confInt1, firstSample1 = simulation(
         r, name, n, tau, alpha, beta, cutoff=cutoff, outlier=False
     )
-    point2, test2, confInt2 = simulation(
+    point2, test2, confInt2, firstSample2 = simulation(
         r,
         name,
         n,
@@ -282,7 +295,7 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
         outlierMethod="Simple Outside",
         nOutliers=1,
     )
-    point3, test3, confInt3 = simulation(
+    point3, test3, confInt3, firstSample3 = simulation(
         r,
         name,
         n,
@@ -294,7 +307,7 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
         outlierMethod="Simple Outside",
         nOutliers=2,
     )
-    point4, test4, confInt4 = simulation(
+    point4, test4, confInt4, firstSample4 = simulation(
         r,
         name,
         n,
@@ -306,7 +319,7 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
         outlierMethod="Simple",
         nOutliers=1,
     )
-    point5, test5, confInt5 = simulation(
+    point5, test5, confInt5, firstSample5 = simulation(
         r,
         name,
         n,
@@ -318,7 +331,7 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
         outlierMethod="Simple",
         nOutliers=2,
     )
-    point6, test6, confInt6 = simulation(
+    point6, test6, confInt6, firstSample6 = simulation(
         r, "Noack", n, tau=0, L=40, cutoff=cutoff, b=0.5, outlier=False
     )
 
@@ -611,7 +624,18 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
     )
 
     # Plot figures and print latex tables
-    scenariosHist(
+    plotSamplesComparison(
+        [
+            firstSample1,
+            firstSample2,
+            firstSample3,
+            firstSample4,
+            firstSample5,
+            firstSample6,
+        ], True, 
+        "images/sampleComparison.png",
+    )
+    plotScenariosHist(
         [point1, point2, point3, point4, point5, point6],
         True,
         "images/scenariosHist.png",
@@ -620,5 +644,5 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
     toLatexTable(Results2a, Results2b, caption2, ref="table:R2")
     toLatexTable(Results3a_1, Results3b_1, caption3, ref="table:R3_1")
 
-    print("n = "+str(n)+' , r = '+str(r))
-    print('--------- Thank you for running my thesis project ---------')
+    print("n = " + str(n) + " , r = " + str(r))
+    print("--------- Thank you for running my thesis project ---------")
