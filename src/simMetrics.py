@@ -365,15 +365,15 @@ def analyseSimResults(simResults, tau, printToLatex=False):
 
     # Create labels for dataframe with results about type 1 error of t-test
     labelsResults4 = [
-        "10%",
-        "5%",
-        "1%",
-        "10%",
-        "5%",
-        "1%",
-        "10%",
-        "5%",
-        "1%",
+        "10//%",
+         "5//%",
+         "1//%",
+        "10//%",
+         "5//%",
+         "1//%",
+        "10//%",
+         "5//%",
+         "1//%",
     ]
     labelsResults4a = pd.MultiIndex.from_arrays(
         [
@@ -437,7 +437,7 @@ def analyseSimResults(simResults, tau, printToLatex=False):
         "Jarque-Bera test statistic of the simulated point estimates. "
         + "T-test incorrect rejection of $H_0: \\hat{\\tau}=\\tau$ (normal and student's-t distributions)"
     )
-    caption3 = "Correct coverage of the confidence intervals and lenght. For significance level of $\\alpha=0.05$"
+    caption3 = "Correct coverage of the confidence intervals and length. For significance level of $\\alpha=0.05$"
     caption4 = "Type I error of t-test statistic of the simulated point estimates for $h_0:\\hat{\\tau}=\\tau$, "
     captions = caption1, caption2, caption3, caption4
     # Plot figures and print latex tables
