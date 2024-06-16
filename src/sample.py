@@ -281,7 +281,7 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1, cutoff=0):
                     i = i + 1
                 else:
                     i = i + 1
-    
+
     # Simple Outised generates outlier(s) just outside the right side of the donut stripe
     if name == "Simple Outside Right":
         i = 0
@@ -289,7 +289,7 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1, cutoff=0):
             notFound = True
             # Find first observation just outside the stripe and change outcome value to 2.5
             while notFound & (i < len(X)):
-                if (X[i] <= -2 * delta) & (X[i] > -delta):
+                if (X[i] <= 2 * delta) & (X[i] > delta):
                     Y[i] = 10
                     Outliers[i] = 1
                     notFound = False
@@ -315,7 +315,7 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1, cutoff=0):
                     i = i + 1
 
             notFound = True
-            # Find first observation just outside the right-side of the stripe and 
+            # Find first observation just outside the right-side of the stripe and
             # change outcome value to 2.5
             while notFound & (j < len(X)):
                 if (X[j] <= 2 * delta) & (X[j] > delta):
@@ -325,13 +325,13 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1, cutoff=0):
                     j = j + 1
                 else:
                     j = j + 1
-         # Simple Oposite generates outlier(s) on both sides of the cutoff just outside the donut stripe.
+        # Simple Oposite generates outlier(s) on both sides of the cutoff just outside the donut stripe.
     if name == "Simple Oposite Inside":
         i = 0
         j = 0
         for k in range(nOutliers):
             notFound = True
-            # Find first observation just outside the left-side of the stripe and
+            # Find first observation just inside the left-side of the stripe and
             # change outcome value to -2.5
             while notFound & (i < len(X)):
                 if (X[i] <= cutoff) & (X[i] > -delta):
@@ -343,7 +343,7 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1, cutoff=0):
                     i = i + 1
 
             notFound = True
-            # Find first observation just outside the right-side of the stripe and 
+            # Find first observation just inside the right-side of the stripe and
             # change outcome value to 2.5
             while notFound & (j < len(X)):
                 if (X[j] >= cutoff) & (X[j] < delta):
