@@ -66,7 +66,7 @@ def simulation(
     -------
     pointEstimation: DataFrame
         A dataframe object with the point estimation results from the simulation.
-        Values are stored as bias relative to the true value.
+        Values are stored as point relative to the true value.
     testValues: DataFrame
         A dataframe object with the results about the type I error of t-tests.
         Includes two dataframes one with results based on normal and one based on t distr.
@@ -79,7 +79,7 @@ def simulation(
     """
 
     # Creat empty output arrays
-    bias = [{}, {}, {}, {}]
+    point = [{}, {}, {}, {}]
 
     t_type1error = [{}, {}, {}, {}], [{}, {}, {}, {}], [{}, {}, {}, {}]
 
@@ -118,8 +118,8 @@ def simulation(
             # Fit the model
             res = jointFitRD(models[m], sample, cutoff)
 
-            # Record point estimate
-            bias[m] = np.append(bias[m], res.params.iloc[2] - tau)
+            # Record point estimates
+            point[m] = np.append(point[m], res.params.iloc[2])
 
             # Record if t test of Ho: t == tau is rejected based on normal and student-t
             if tau == 0:
@@ -194,7 +194,7 @@ def simulation(
 
     # Adjust the format of the arrays (delete empty first cell)
     for m in range(len(models)):
-        bias[m] = np.delete(bias[m], 0)
+        point[m] = np.delete(point[m], 0)
         t_type1error[0][m] = np.delete(t_type1error[0][m], 0)
         t_type1error[1][m] = np.delete(t_type1error[1][m], 0)
         t_type1error[2][m] = np.delete(t_type1error[2][m], 0)
@@ -205,7 +205,7 @@ def simulation(
 
     # Create dataframe with point estimation results from the simulation
     pointEstimation = pd.DataFrame(
-        {"OLS": bias[0], "Huber": bias[1], "Tukey": bias[2], "Donut": bias[3]}
+        {"OLS": point[0], "Huber": point[1], "Tukey": point[2], "Donut": point[3]}
     )
 
     # Create dataframes with t-test results from the simulation

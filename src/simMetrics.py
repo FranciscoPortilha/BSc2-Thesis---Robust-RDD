@@ -207,13 +207,13 @@ def analyseSimResults(simResults, tau, printToLatex=False):
         np.transpose(
             np.array(
                 [
-                    point1.mean(),
+                    point1.mean()-tau,
                     point1.std(),
                     compRMSE(point1, 2),
-                    point2.mean(),
+                    point2.mean()-tau,
                     point2.std(),
                     compRMSE(point2, 2),
-                    point3.mean(),
+                    point3.mean()-tau,
                     point3.std(),
                     compRMSE(point3, 2),
                 ]
@@ -226,13 +226,13 @@ def analyseSimResults(simResults, tau, printToLatex=False):
         np.transpose(
             np.array(
                 [
-                    point4.mean(),
+                    point4.mean()-tau,
                     point4.std(),
                     compRMSE(point4, 2),
-                    point5.mean(),
+                    point5.mean()-tau,
                     point5.std(),
                     compRMSE(point5, 2),
-                    point6.mean(),
+                    point6.mean()-tau,
                     point6.std(),
                     compRMSE(point6, 2),
                 ]
@@ -365,15 +365,15 @@ def analyseSimResults(simResults, tau, printToLatex=False):
 
     # Create labels for dataframe with results about type 1 error of t-test
     labelsResults4 = [
-        "10//%",
-         "5//%",
-         "1//%",
-        "10//%",
-         "5//%",
-         "1//%",
-        "10//%",
-         "5//%",
-         "1//%",
+        "10\\%",
+         "5\\%",
+         "1\\%",
+        "10\\%",
+         "5\\%",
+         "1\\%",
+        "10\\%",
+         "5\\%",
+         "1\\%",
     ]
     labelsResults4a = pd.MultiIndex.from_arrays(
         [
@@ -477,6 +477,8 @@ def analyseSimResults(simResults, tau, printToLatex=False):
         + str(len(firstSample1.X))
         + " , r = "
         + str(len(point1.OLS))
+        + " , τ = "
+        + str(tau)
         + " -------------"
     )
     print("")
