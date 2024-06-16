@@ -85,7 +85,7 @@ def plotScenariosHist(scenarios, saveFig=False, figPath=""):
             c = c + 1
         axs[j][l].set_title("Scenario " + str(1 + i))
 
-        # Increment figure location
+        # Increment figure location and add legend
         if i == 0:
             axs[j][l].legend(loc="upper left")
         if i == 2:
@@ -185,27 +185,31 @@ def plotSamplesComparison(
         return fig
 
 
-def plotPowerFunctionComparison(taus, rejectionRates, saveFig=False, figPath="", scenarioNum=""):
-    fig, axs = plt.subplots(1, 3, figsize=[19, 7])
+def plotPowerFunctionComparison(taus, rejectionRates, saveFig=False, figPath=""):
+    fig, axs = plt.subplots(2, 3, figsize=[19, 9])
     labels = ["OLS", "Huber", "Tukey", "Donut"]
     colors = ["darkorange", "royalblue", "mediumseagreen", "mediumorchid"]
-
+    j, l = 0, 0
     # For each scenario
-    for i in range(3):
+    for i in range(6):
         c = 0
         # Plot the power functions
         for m in range(len(labels)):
-            axs[i].plot(
+            axs[j][l].plot(
                 taus, rejectionRates[i][m], color=colors[m], label=labels[m], linewidth=0.8
             )
-        axs[i].plot(taus, 0.05 + np.zeros_like(taus), color="r", linewidth=0.8)
-        axs[i].set_ylabel("rejection rate")
-        axs[i].set_xlabel("$τ$")
-        axs[i].set_title("Scenario "+ str(scenarioNum[i]))
+        axs[j][l].plot(taus, 0.05 + np.zeros_like(taus), color="r", linewidth=0.8)
+        axs[j][l].set_ylabel("rejection rate")
+        axs[j][l].set_xlabel("$τ$")
+        axs[j][l].set_title("Scenario "+ str(1+i))
 
-        # Increment figure location
+        # Increment figure location and add lengend
         if i == 0:
-            axs[i].legend()
+            axs[j][l].legend(loc="upper left")
+        if i == 2:
+            j = 1
+            l = -1
+        l = l + 1
 
     # Save figure
     if saveFig:

@@ -228,7 +228,7 @@ def genY(name, X, tau=0, L=0, alpha=0, beta=0):
     return Y
 
 
-def genOutlier(Y, X, name, nOutliers=1, delta=0.1):
+def genOutlier(Y, X, name, nOutliers=1, delta=0.1, cutoff=0):
     """
     This function generates outliers based on different methods
 
@@ -261,7 +261,7 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1):
             notFound = True
             # Find first observation in the stripe and change outcome value to 2.5
             while notFound & (i < len(X)):
-                if (X[i] <= delta) & (X[i] > 0):
+                if (X[i] <= delta) & (X[i] > cutoff):
                     Y[i] = 10
                     Outliers[i] = 1
                     notFound = False
@@ -290,7 +290,7 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1):
             # Find first observation just outside the stripe and change outcome value to 2.5
             while notFound & (i < len(X)):
                 if (X[i] <= -2 * delta) & (X[i] > -delta):
-                    Y[i] = 5
+                    Y[i] = 10
                     Outliers[i] = 1
                     notFound = False
                     i = i + 1
@@ -319,6 +319,34 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1):
             # change outcome value to 2.5
             while notFound & (j < len(X)):
                 if (X[j] <= 2 * delta) & (X[j] > delta):
+                    Y[j] = 10
+                    Outliers[j] = 1
+                    notFound = False
+                    j = j + 1
+                else:
+                    j = j + 1
+         # Simple Oposite generates outlier(s) on both sides of the cutoff just outside the donut stripe.
+    if name == "Simple Oposite Inside":
+        i = 0
+        j = 0
+        for k in range(nOutliers):
+            notFound = True
+            # Find first observation just outside the left-side of the stripe and
+            # change outcome value to -2.5
+            while notFound & (i < len(X)):
+                if (X[i] <= cutoff) & (X[i] > -delta):
+                    Y[i] = -10
+                    Outliers[i] = 1
+                    notFound = False
+                    i = i + 1
+                else:
+                    i = i + 1
+
+            notFound = True
+            # Find first observation just outside the right-side of the stripe and 
+            # change outcome value to 2.5
+            while notFound & (j < len(X)):
+                if (X[j] >= cutoff) & (X[j] < delta):
                     Y[j] = 10
                     Outliers[j] = 1
                     notFound = False

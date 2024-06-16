@@ -447,14 +447,27 @@ def powerSimulations(
     alpha,
     beta,
     cutoff,
+    parametersScenarios,
 ):
+    (
+        scenario2_method,
+        scenario2_num,
+        scenario3_method,
+        scenario3_num,
+        scenario4_method,
+        scenario4_num,
+        scenario5_method,
+        scenario5_num,
+        scenario6_method,
+        scenario6_num,
+    ) = parametersScenarios
     taus = [{}]
     for i in range(-8, 9):
         taus = np.append(taus, i / 4)
     taus = np.delete(taus, 0)
 
     rejectionRates = (
-        powerSimulation(taus, r, nameSample, n, alpha=0.5, beta=1, cutoff=0),
+        powerSimulation(taus, r, nameSample, n, alpha, beta, cutoff=0),
         powerSimulation(
             taus,
             r,
@@ -464,8 +477,8 @@ def powerSimulations(
             beta,
             cutoff,
             outlier=True,
-            outlierMethod="Simple",
-            nOutliers=1,
+            outlierMethod=scenario2_method,
+            nOutliers=scenario2_num,
         ),
         powerSimulation(
             taus,
@@ -476,8 +489,44 @@ def powerSimulations(
             beta,
             cutoff,
             outlier=True,
-            outlierMethod="Simple Oposite",
-            nOutliers=3,
+            outlierMethod=scenario3_method,
+            nOutliers=scenario3_num,
+        ),
+        powerSimulation(
+            taus,
+            r,
+            nameSample,
+            n,
+            alpha,
+            beta,
+            cutoff,
+            outlier=True,
+            outlierMethod=scenario4_method,
+            nOutliers=scenario4_num,
+        ),
+        powerSimulation(
+            taus,
+            r,
+            nameSample,
+            n,
+            alpha,
+            beta,
+            cutoff,
+            outlier=True,
+            outlierMethod=scenario5_method,
+            nOutliers=scenario5_num,
+        ),
+        powerSimulation(
+            taus,
+            r,
+            nameSample,
+            n,
+            alpha,
+            beta,
+            cutoff,
+            outlier=True,
+            outlierMethod=scenario6_method,
+            nOutliers=scenario6_num,
         ),
     )
 
@@ -486,6 +535,4 @@ def powerSimulations(
         rejectionRates,
         True,
         "images/powerFunctions.png",
-        [1,4,5],
     )
-
