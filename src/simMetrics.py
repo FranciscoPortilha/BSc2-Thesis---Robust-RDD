@@ -72,7 +72,7 @@ def percentV(values):
     )
 
 
-def analyseSimResults(simResults, printToLatex=False):
+def analyseSimResults(simResults, tau, printToLatex=False):
     """
     This method analyses the results from the simulation, saves the various figures,
     prints the latex tables.
@@ -109,6 +109,22 @@ def analyseSimResults(simResults, printToLatex=False):
         firstSample6,
     ) = simResults
     # Create lables that are used in multiple tables
+    labelsScenariosA_2 = [
+        "Scenario 1",
+        "Scenario 1",
+        "Scenario 2",
+        "Scenario 2",
+        "Scenario 3",
+        "Scenario 3",
+    ]
+    labelsScenariosB_2 = [
+        "Scenario 4",
+        "Scenario 4",
+        "Scenario 5",
+        "Scenario 5",
+        "Scenario 6",
+        "Scenario 6",
+    ]
     labelsScenariosA = [
         "Scenario 1",
         "Scenario 1",
@@ -159,7 +175,7 @@ def analyseSimResults(simResults, printToLatex=False):
         "Scenario 6",
         "Scenario 6",
     ]
-    row = ["OLS", "Huber", "Tuckey", "Donut"]
+    row = ["OLS", "Huber", "Tukey", "Donut"]
 
     # Create labels for dataframe with results about Mean, St.dev and RMSE
     labelsResults1 = [
@@ -291,93 +307,124 @@ def analyseSimResults(simResults, printToLatex=False):
         index=row,
     )
 
-    labelsResults3_u = [
-        "T-Test - T.I",
-        "T-Test - T.I",
-        "C.I.",
-        "C.I.",
-        "T-Test - T.I",
-        "T-Test - T.I",
-        "C.I.",
-        "C.I.",
-        "T-Test - T.I",
-        "T-Test - T.I",
-        "C.I.",
-        "C.I.",
-    ]
-    labelsResults3_b = [
-        "N",
-        "St-t",
-        "C.C",
-        "Size",
-        "N",
-        "St-t",
-        "C.C",
-        "Size",
-        "N",
-        "St-t",
-        "C.C",
-        "Size",
+    # Create labels for dataframe about correct coverage of C.I. and lenght
+    labelsResults3 = [
+        "C.C.",
+        "Length",
+        "C.C.",
+        "Length",
+        "C.C.",
+        "Length",
     ]
     labelsResults3a = pd.MultiIndex.from_arrays(
         [
-            labelsScenariosA_4,
-            labelsResults3_u,
-            labelsResults3_b,
+            labelsScenariosA_2,
+            labelsResults3,
         ]
     )
     labelsResults3b = pd.MultiIndex.from_arrays(
         [
-            labelsScenariosB_4,
-            labelsResults3_u,
-            labelsResults3_b,
+            labelsScenariosB_2,
+            labelsResults3,
         ]
     )
 
-    # Create 2 dataframes with results about Type 1 error of t-test (Normal and st.-t)
-    # And correct coverage of C.I. and it's lenght
-    Results3a_1 = pd.DataFrame(
+    # Create 2 dataframes with results about correct coverage of C.I. and lenght
+    Results3a = pd.DataFrame(
         np.transpose(
             np.array(
                 [
-                    test1[0][0].mean(),
-                    test1[1][0].mean(),
-                    confInt1[0][0].mean(),
-                    confInt1[1][0].mean(),
-                    test2[0][0].mean(),
-                    test2[1][0].mean(),
-                    confInt2[0][0].mean(),
-                    confInt2[1][0].mean(),
-                    test3[0][0].mean(),
-                    test3[1][0].mean(),
-                    confInt3[0][0].mean(),
-                    confInt3[1][0].mean(),
+                    confInt1[0][1].mean(),
+                    confInt1[1][1].mean(),
+                    confInt2[0][1].mean(),
+                    confInt2[1][1].mean(),
+                    confInt3[0][1].mean(),
+                    confInt3[1][1].mean(),
                 ]
             )
         ),
         columns=labelsResults3a,
         index=row,
     )
-    Results3b_1 = pd.DataFrame(
+    Results3b = pd.DataFrame(
         np.transpose(
             np.array(
                 [
-                    test4[0][0].mean(),
-                    test4[1][0].mean(),
-                    confInt4[0][0].mean(),
-                    confInt4[1][0].mean(),
-                    test5[0][0].mean(),
-                    test5[1][0].mean(),
-                    confInt5[0][0].mean(),
-                    confInt5[1][0].mean(),
-                    test6[0][0].mean(),
-                    test6[1][0].mean(),
-                    confInt6[0][0].mean(),
-                    confInt6[1][0].mean(),
+                    confInt4[0][1].mean(),
+                    confInt4[1][1].mean(),
+                    confInt5[0][1].mean(),
+                    confInt5[1][1].mean(),
+                    confInt6[0][1].mean(),
+                    confInt6[1][1].mean(),
                 ]
             )
         ),
         columns=labelsResults3b,
+        index=row,
+    )
+
+    # Create labels for dataframe with results about type 1 error of t-test
+    labelsResults4 = [
+        "10%",
+        "5%",
+        "1%",
+        "10%",
+        "5%",
+        "1%",
+        "10%",
+        "5%",
+        "1%",
+    ]
+    labelsResults4a = pd.MultiIndex.from_arrays(
+        [
+            labelsScenariosA,
+            labelsResults4,
+        ]
+    )
+    labelsResults4b = pd.MultiIndex.from_arrays(
+        [
+            labelsScenariosB,
+            labelsResults4,
+        ]
+    )
+
+    # Create 2 dataframes with results about type 1 error of t-test
+    Results4a = pd.DataFrame(
+        np.transpose(
+            np.array(
+                [
+                    test1[0].mean(),
+                    test1[1].mean(),
+                    test1[2].mean(),
+                    test2[0].mean(),
+                    test2[1].mean(),
+                    test2[2].mean(),
+                    test3[0].mean(),
+                    test3[1].mean(),
+                    test3[2].mean(),
+                ]
+            )
+        ),
+        columns=labelsResults4a,
+        index=row,
+    )
+    Results4b = pd.DataFrame(
+        np.transpose(
+            np.array(
+                [
+                    test4[0].mean(),
+                    test4[1].mean(),
+                    test4[2].mean(),
+                    test5[0].mean(),
+                    test5[1].mean(),
+                    test5[2].mean(),
+                    test6[0].mean(),
+                    test6[1].mean(),
+                    test6[2].mean(),
+                ]
+            )
+        ),
+        columns=labelsResults4b,
         index=row,
     )
 
@@ -390,12 +437,9 @@ def analyseSimResults(simResults, printToLatex=False):
         "Jarque-Bera test statistic of the simulated point estimates. "
         + "T-test incorrect rejection of $H_0: \\hat{\\tau}=\\tau$ (normal and student's-t distributions)"
     )
-    caption3 = (
-        "Type I error of t-test statistic of the simulated point estimates for $h_0:\\hat{\\tau}=\\tau$, "
-        + "based on normal and student's-t distributions. Correct coverage of the confidence intervals "
-        + "and lenght. For significance level of $\\alpha=0.1$"
-    )
-    captions = caption1, caption2, caption3
+    caption3 = "Correct coverage of the confidence intervals and lenght. For significance level of $\\alpha=0.05$"
+    caption4 = "Type I error of t-test statistic of the simulated point estimates for $h_0:\\hat{\\tau}=\\tau$, "
+    captions = caption1, caption2, caption3, caption4
     # Plot figures and print latex tables
     plotSamplesComparison(
         [
@@ -407,7 +451,7 @@ def analyseSimResults(simResults, printToLatex=False):
             firstSample6,
         ],
         True,
-        "images/sampleComparison.png",
+        "images/sampleComparison_tau_"+str(tau)+".png",
     )
     plotSamplesComparison(
         [
@@ -419,13 +463,13 @@ def analyseSimResults(simResults, printToLatex=False):
             firstSample6,
         ],
         True,
-        "images/estimationComparison.png",
+        "images/regressionComparison_tau_"+str(tau)+".png",
         True,
     )
     plotScenariosHist(
         [point1, point2, point3, point4, point5, point6],
         True,
-        "images/scenariosHist.png",
+        "images/scenariosHist_tau_"+str(tau)+".png",
     )
     print("")
     print(
@@ -442,14 +486,16 @@ def analyseSimResults(simResults, printToLatex=False):
         print("")
         toLatexTable(Results1a, Results1b, caption1, ref="table:R1")
         toLatexTable(Results2a, Results2b, caption2, ref="table:R2")
-        toLatexTable(Results3a_1, Results3b_1, caption3, ref="table:R3_1")
+        toLatexTable(Results3a, Results3b, caption3, ref="table:R3")
+        toLatexTable(Results4a, Results4b, caption4, ref="table:R4")
     print("------------- Results -------------")
     print("")
     i = 0
     for table in (
         (Results1a, Results1b),
         (Results2a, Results2b),
-        (Results3a_1, Results3b_1),
+        (Results3a, Results3b),
+        (Results4a, Results4b),
     ):
         print("")
         print("Table " + str(1 + i) + " - " + captions[i])

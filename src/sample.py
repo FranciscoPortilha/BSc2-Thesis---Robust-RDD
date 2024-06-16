@@ -377,7 +377,7 @@ def genSample(
 
     Parameters
     ----------
-    name: string, Options: 'Noak', 'Basic', 'Basic Linear'
+    name: string, Options: 'Noack', 'Basic', 'Basic Linear'
         The name of the DGP to use to generate the sample.
     n: int
         The size of the sample.

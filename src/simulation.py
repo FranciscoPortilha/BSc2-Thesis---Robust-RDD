@@ -19,7 +19,7 @@ from src.exports import (
 )
 from src.rrdd import jointFitRD
 from src.sample import genSample
-from src.simMetrics import compJB, compKurt, compRMSE, compSkew
+from src.simMetrics import analyseSimResults
 
 
 def simulation(
@@ -44,7 +44,7 @@ def simulation(
     ----------
     r: int
         The number of replications.
-    nameSample: string, Options: 'Noak', 'Basic Linear'
+    nameSample: string, Options: 'Noack', 'Basic Linear'
         The name of the DGP to use to generate the sample.
     n: int
         The size of the sample.
@@ -81,13 +81,12 @@ def simulation(
     # Creat empty output arrays
     bias = [{}, {}, {}, {}]
 
-    t_normal = [{}, {}, {}, {}], [{}, {}, {}, {}], [{}, {}, {}, {}]
-    t_studT = [{}, {}, {}, {}], [{}, {}, {}, {}], [{}, {}, {}, {}]
+    t_type1error = [{}, {}, {}, {}], [{}, {}, {}, {}], [{}, {}, {}, {}]
 
     ci_cove = [{}, {}, {}, {}], [{}, {}, {}, {}], [{}, {}, {}, {}]
     ci_lenght = [{}, {}, {}, {}], [{}, {}, {}, {}], [{}, {}, {}, {}]
 
-    models = ["OLS", "Robust Huber", "Robust Tuckey", "Donut"]
+    models = ["OLS", "Robust Huber", "Robust Tukey", "Donut"]
     firstSample = []
 
     # Generate sample, fit models and record results r times
@@ -113,102 +112,96 @@ def simulation(
         # Store first sample for comparison
         if k == 0:
             firstSample = sample
+
         # Estimate the different models and record results
-        for i in range(len(models)):
+        for m in range(len(models)):
             # Fit the model
-            res = jointFitRD(models[i], sample, cutoff)
+            res = jointFitRD(models[m], sample, cutoff)
 
             # Record point estimate
-            bias[i] = np.append(bias[i], res.params.iloc[2] - tau)
+            bias[m] = np.append(bias[m], res.params.iloc[2] - tau)
 
             # Record if t test of Ho: t == tau is rejected based on normal and student-t
-            useStudentT = False
-            for t in t_normal, t_studT:
-                if (tau == 0) & (useStudentT == False):
-                    p = res.pvalues.iloc[2]
-                else:
-                    p = res.t_test(([0, 0, 1, 0], tau), use_t=useStudentT).pvalue
+            if tau == 0:
+                p = res.pvalues.iloc[2]
+            else:
+                p = res.t_test(([0, 0, 1, 0], tau)).pvalue
 
-                # Record if t test of Ho: t == tau is rejected
-                if p >= 0.1:
-                    # No incorrect rejections
-                    t[0][i] = np.append(t[0][i], 0)
-                    t[1][i] = np.append(t[1][i], 0)
-                    t[2][i] = np.append(t[2][i], 0)
-
-                elif p >= 0.05:
-                    # Incorrect rejection at 0.1 level
-                    t[0][i] = np.append(t[0][i], 1)
-                    t[1][i] = np.append(t[1][i], 0)
-                    t[2][i] = np.append(t[2][i], 0)
-
-                elif p >= 0.01:
-                    # Incorrect rejection at 0.1 and 0.05 levels
-                    t[0][i] = np.append(t[0][i], 1)
-                    t[1][i] = np.append(t[1][i], 1)
-                    t[2][i] = np.append(t[2][i], 0)
-
-                else:
-                    # Incorrect rejection at all levels
-                    t[0][i] = np.append(t[0][i], 1)
-                    t[1][i] = np.append(t[1][i], 1)
-                    t[2][i] = np.append(t[2][i], 1)
-
-                useStudentT = True
+            # Record if t test of Ho: t == tau is rejected
+            if p >= 0.1:
+                # No incorrect rejections
+                t_type1error[0][m] = np.append(t_type1error[0][m], 0)
+                t_type1error[1][m] = np.append(t_type1error[1][m], 0)
+                t_type1error[2][m] = np.append(t_type1error[2][m], 0)
+            elif p >= 0.05:
+                # Incorrect rejection at 0.1 level
+                t_type1error[0][m] = np.append(t_type1error[0][m], 1)
+                t_type1error[1][m] = np.append(t_type1error[1][m], 0)
+                t_type1error[2][m] = np.append(t_type1error[2][m], 0)
+            elif p >= 0.01:
+                # Incorrect rejection at 0.1 and 0.05 levels
+                t_type1error[0][m] = np.append(t_type1error[0][m], 1)
+                t_type1error[1][m] = np.append(t_type1error[1][m], 1)
+                t_type1error[2][m] = np.append(t_type1error[2][m], 0)
+            else:
+                # Incorrect rejection at all levels
+                t_type1error[0][m] = np.append(t_type1error[0][m], 1)
+                t_type1error[1][m] = np.append(t_type1error[1][m], 1)
+                t_type1error[2][m] = np.append(t_type1error[2][m], 1)
+            
 
             # Record correct coverage of confidence interval
             if (res.conf_int(0.1)[0].iloc[2] < tau) & (
                 tau < res.conf_int(0.1)[1].iloc[2]
             ):
                 # Correct coverage all levels
-                ci_cove[0][i] = np.append(ci_cove[0][i], 1)
-                ci_cove[1][i] = np.append(ci_cove[1][i], 1)
-                ci_cove[2][i] = np.append(ci_cove[2][i], 1)
+                ci_cove[0][m] = np.append(ci_cove[0][m], 1)
+                ci_cove[1][m] = np.append(ci_cove[1][m], 1)
+                ci_cove[2][m] = np.append(ci_cove[2][m], 1)
 
             elif (res.conf_int()[0].iloc[2] < tau) & (tau < res.conf_int()[1].iloc[2]):
                 # Incorrect coverage 0.1 level
-                ci_cove[0][i] = np.append(ci_cove[0][i], 0)
-                ci_cove[1][i] = np.append(ci_cove[1][i], 1)
-                ci_cove[2][i] = np.append(ci_cove[2][i], 1)
+                ci_cove[0][m] = np.append(ci_cove[0][m], 0)
+                ci_cove[1][m] = np.append(ci_cove[1][m], 1)
+                ci_cove[2][m] = np.append(ci_cove[2][m], 1)
 
             elif (res.conf_int(0.01)[0].iloc[2] < tau) & (
                 tau < res.conf_int(0.01)[1].iloc[2]
             ):
                 # Incorrect coverage 0.1 and 0.5 level
-                ci_cove[0][i] = np.append(ci_cove[0][i], 0)
-                ci_cove[1][i] = np.append(ci_cove[1][i], 0)
-                ci_cove[2][i] = np.append(ci_cove[2][i], 1)
+                ci_cove[0][m] = np.append(ci_cove[0][m], 0)
+                ci_cove[1][m] = np.append(ci_cove[1][m], 0)
+                ci_cove[2][m] = np.append(ci_cove[2][m], 1)
 
             else:
                 # Incorrect coverage on all levels
-                ci_cove[0][i] = np.append(ci_cove[0][i], 0)
-                ci_cove[1][i] = np.append(ci_cove[1][i], 0)
-                ci_cove[2][i] = np.append(ci_cove[2][i], 0)
+                ci_cove[0][m] = np.append(ci_cove[0][m], 0)
+                ci_cove[1][m] = np.append(ci_cove[1][m], 0)
+                ci_cove[2][m] = np.append(ci_cove[2][m], 0)
 
             # Record lenght of C.I. for all significance levels
-            ci_lenght[0][i] = np.append(
-                ci_lenght[0][i],
+            ci_lenght[0][m] = np.append(
+                ci_lenght[0][m],
                 res.conf_int(0.1)[1].iloc[2] - res.conf_int(0.1)[0].iloc[2],
             )
-            ci_lenght[1][i] = np.append(
-                ci_lenght[1][i], res.conf_int()[1].iloc[2] - res.conf_int()[0].iloc[2]
+            ci_lenght[1][m] = np.append(
+                ci_lenght[1][m], res.conf_int()[1].iloc[2] - res.conf_int()[0].iloc[2]
             )
-            ci_lenght[2][i] = np.append(
-                ci_lenght[2][i],
+            ci_lenght[2][m] = np.append(
+                ci_lenght[2][m],
                 res.conf_int(0.01)[1].iloc[2] - res.conf_int(0.01)[0].iloc[2],
             )
 
     # Adjust the format of the arrays (delete empty first cell)
-    for i in range(len(models)):
-        bias[i] = np.delete(bias[i], 0)
-        for t in t_normal, t_studT:
-            t[0][i] = np.delete(t[0][i], 0)
-            t[1][i] = np.delete(t[1][i], 0)
-            t[2][i] = np.delete(t[2][i], 0)
+    for m in range(len(models)):
+        bias[m] = np.delete(bias[m], 0)
+        t_type1error[0][m] = np.delete(t_type1error[0][m], 0)
+        t_type1error[1][m] = np.delete(t_type1error[1][m], 0)
+        t_type1error[2][m] = np.delete(t_type1error[2][m], 0)
         for c in ci_cove, ci_lenght:
-            c[0][i] = np.delete(c[0][i], 0)
-            c[1][i] = np.delete(c[1][i], 0)
-            c[2][i] = np.delete(c[2][i], 0)
+            c[0][m] = np.delete(c[0][m], 0)
+            c[1][m] = np.delete(c[1][m], 0)
+            c[2][m] = np.delete(c[2][m], 0)
 
     # Create dataframe with point estimation results from the simulation
     pointEstimation = pd.DataFrame(
@@ -216,35 +209,31 @@ def simulation(
     )
 
     # Create dataframes with t-test results from the simulation
-    testValues = ["", ""]
-    k = 0
-    for t in t_normal, t_studT:
-        testValues_1 = pd.DataFrame(
-            {
-                "OLS": t[0][0],
-                "Huber": t[0][1],
-                "Tukey": t[0][2],
-                "Donut": t[0][3],
-            }
-        )
-        testValues_05 = pd.DataFrame(
-            {
-                "OLS": t[1][0],
-                "Huber": t[1][1],
-                "Tukey": t[1][2],
-                "Donut": t[1][3],
-            }
-        )
-        testValues_01 = pd.DataFrame(
-            {
-                "OLS": t[2][0],
-                "Huber": t[2][1],
-                "Tukey": t[2][2],
-                "Donut": t[2][3],
-            }
-        )
-        testValues[k] = [testValues_1, testValues_05, testValues_01]
-        k = k + 1
+    testValues_1 = pd.DataFrame(
+        {
+            "OLS":   t_type1error[0][0],
+            "Huber": t_type1error[0][1],
+            "Tukey": t_type1error[0][2],
+            "Donut": t_type1error[0][3],
+        }
+    )
+    testValues_05 = pd.DataFrame(
+        {
+            "OLS":   t_type1error[1][0],
+            "Huber": t_type1error[1][1],
+            "Tukey": t_type1error[1][2],
+            "Donut": t_type1error[1][3],
+        }
+    )
+    testValues_01 = pd.DataFrame(
+        {
+            "OLS":   t_type1error[2][0],
+            "Huber": t_type1error[2][1],
+            "Tukey": t_type1error[2][2],
+            "Donut": t_type1error[2][3],
+        }
+    )
+    testValues = [testValues_1, testValues_05, testValues_01]
 
     # Create dataframes with C.I. results from the simulation
     ciValues = ["", ""]
@@ -266,7 +255,7 @@ def simulation(
     return pointEstimation, testValues, ciValues, firstSample
 
 
-def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
+def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0, parametersScenarios=""):
     """
     This method runs various simulations and return the results from all different simulations.
 
@@ -294,6 +283,18 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
       Object with the results from the various simulations.
 
     """
+    (
+        scenario2_method,
+        scenario2_num,
+        scenario3_method,
+        scenario3_num,
+        scenario4_method,
+        scenario4_num,
+        scenario5_method,
+        scenario5_num,
+        scenario6_method,
+        scenario6_num,
+    ) = parametersScenarios
     # Run Simulations
     point1, test1, confInt1, firstSample1 = simulation(
         r, name, n, tau, alpha, beta, cutoff=cutoff, outlier=False
@@ -307,8 +308,8 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
         beta,
         cutoff=cutoff,
         outlier=True,
-        outlierMethod="Simple Outside Left",
-        nOutliers=1,
+        outlierMethod=scenario2_method,
+        nOutliers=scenario2_num,
     )
     point3, test3, confInt3, firstSample3 = simulation(
         r,
@@ -319,8 +320,8 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
         beta,
         cutoff=cutoff,
         outlier=True,
-        outlierMethod="Simple Outside Left",
-        nOutliers=3,
+        outlierMethod=scenario3_method,
+        nOutliers=scenario3_num,
     )
     point4, test4, confInt4, firstSample4 = simulation(
         r,
@@ -331,8 +332,8 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
         beta,
         cutoff=cutoff,
         outlier=True,
-        outlierMethod="Simple",
-        nOutliers=1,
+        outlierMethod=scenario4_method,
+        nOutliers=scenario4_num,
     )
     point5, test5, confInt5, firstSample5 = simulation(
         r,
@@ -343,8 +344,8 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
         beta,
         cutoff=cutoff,
         outlier=True,
-        outlierMethod="Simple",
-        nOutliers=3,
+        outlierMethod=scenario5_method,
+        nOutliers=scenario5_num,
     )
     point6, test6, confInt6, firstSample6 = simulation(
         r,
@@ -355,8 +356,8 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
         beta,
         cutoff=cutoff,
         outlier=True,
-        outlierMethod="Simple Oposite",
-        nOutliers=3,
+        outlierMethod=scenario6_method,
+        nOutliers=scenario6_num,
     )
     simResults = (
         point1,
@@ -384,7 +385,8 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
         confInt6,
         firstSample6,
     )
-    return simResults
+    
+    analyseSimResults(simResults, tau, printToLatex=False)
 
 
 def powerSimulation(
@@ -403,7 +405,7 @@ def powerSimulation(
 ):
 
     rejectionRate = [{}, {}, {}, {}]
-    models = ["OLS", "Robust Huber", "Robust Tuckey", "Donut"]
+    models = ["OLS", "Robust Huber", "Robust Tukey", "Donut"]
 
     for i in range(17):
         t_rejections = [{}, {}, {}, {}]

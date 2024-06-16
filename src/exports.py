@@ -119,7 +119,7 @@ def plotSamplesComparison(
         The value of the threshold in the running variable.
     """
     fig, axs = plt.subplots(2, 3, figsize=[20, 12])
-    models = ["OLS", "Robust Huber", "Robust Tuckey", "Donut"]
+    models = ["OLS", "Robust Huber", "Robust Tukey", "Donut"]
     labels = ["OLS", "Huber", "Tukey", "Donut"]
     colors = ["darkorange", "royalblue", "mediumseagreen", "mediumorchid"]
     cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["grey", "red"])

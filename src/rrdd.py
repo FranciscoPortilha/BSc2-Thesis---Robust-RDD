@@ -47,7 +47,7 @@ def fit(name, sample, intercept, cutoff=0, jointFit=False):
     ----------
     name : string
         The name of the estimation method to use.
-        Opiton values : Robust Huber, Robust Tuckey, OLS, Donut.
+        Opiton values : Robust Huber, Robust Tukey, OLS, Donut.
     sample : DataFrame
         The sample to estimate the regression for.
     intercept : boolean
@@ -66,7 +66,7 @@ def fit(name, sample, intercept, cutoff=0, jointFit=False):
         exog = prepExog(sample, intercept, jointFit)
         res = sm.RLM(sample.Y, exog, M=sm.robust.norms.HuberT())
 
-    elif name == "Robust Tuckey":
+    elif name == "Robust Tukey":
         exog = prepExog(sample, intercept, jointFit)
         res = sm.RLM(sample.Y, exog, M=sm.robust.norms.TukeyBiweight())
 
@@ -94,7 +94,7 @@ def splitFitRD(name, sample, cutoff=0):
     ----------
     name : string
         The name of the estimation method to use.
-        Opiton values : Robust Huber, Robust Tuckey, OLS, Donut.
+        Opiton values : Robust Huber, Robust Tukey, OLS, Donut.
     sample : DataFrame
         The sample to estimate the regression for.
     cutoff : int
