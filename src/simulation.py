@@ -386,7 +386,7 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0, parametersScenarios
         firstSample6,
     )
     
-    analyseSimResults(simResults, tau, printToLatex=False)
+    analyseSimResults(simResults, tau, printToLatex=True)
 
 
 def powerSimulation(
