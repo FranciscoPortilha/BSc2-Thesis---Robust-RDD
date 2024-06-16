@@ -262,7 +262,7 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1):
             # Find first observation in the stripe and change outcome value to 2.5
             while notFound & (i < len(X)):
                 if (X[i] <= delta) & (X[i] > 0):
-                    Y[i] = 20
+                    Y[i] = 10
                     Outliers[i] = 1
                     notFound = False
                 i = i + 1
@@ -307,7 +307,7 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1):
             # change outcome value to -2.5
             while notFound & (i < len(X)):
                 if (X[i] >= -2 * delta) & (X[i] < -delta):
-                    Y[i] = -2.5
+                    Y[i] = -10
                     Outliers[i] = 1
                     notFound = False
                     i = i + 1
@@ -319,7 +319,7 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1):
             # change outcome value to 2.5
             while notFound & (j < len(X)):
                 if (X[j] <= 2 * delta) & (X[j] > delta):
-                    Y[j] = 2.5
+                    Y[j] = 10
                     Outliers[j] = 1
                     notFound = False
                     j = j + 1

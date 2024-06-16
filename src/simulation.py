@@ -8,9 +8,15 @@ Author: Francisco Portilha (479126)
 # Public libraries
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # My methods. Developed for my thesis.
-from src.exports import plotSamplesComparison, plotScenariosHist, toLatexTable
+from src.exports import (
+    plotPowerFunctionComparison,
+    plotSamplesComparison,
+    plotScenariosHist,
+    toLatexTable,
+)
 from src.rrdd import jointFitRD
 from src.sample import genSample
 from src.simMetrics import compJB, compKurt, compRMSE, compSkew
@@ -259,6 +265,7 @@ def simulation(
     # Return results
     return pointEstimation, testValues, ciValues, firstSample
 
+
 def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
     """
     This method runs various simulations and return the results from all different simulations.
@@ -380,6 +387,105 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0):
     return simResults
 
 
-# point6, test6, confInt6, firstSample6 = simulation(
-#        r, name, n, tau=0, L=40, cutoff=cutoff, b=0.5, outlier=False
-#    )
+def powerSimulation(
+    taus,
+    r,
+    nameSample,
+    n,
+    alpha,
+    beta,
+    cutoff,
+    L=0,
+    b=1,
+    outlier=False,
+    outlierMethod="",
+    nOutliers=0,
+):
+
+    rejectionRate = [{}, {}, {}, {}]
+    models = ["OLS", "Robust Huber", "Robust Tuckey", "Donut"]
+
+    for i in range(17):
+        t_rejections = [{}, {}, {}, {}]
+        for k in range(r):
+            # Generate a new sample
+            sample = genSample(
+                nameSample,
+                n,
+                taus[i],
+                alpha,
+                beta,
+                L,
+                cutoff,
+                outlier,
+                outlierMethod,
+                nOutliers,
+                False,
+            )
+            for m in range(len(models)):
+                res = jointFitRD(models[m], sample, cutoff)
+                p = res.pvalues.iloc[2]
+                if p >= 0.05:
+                    t_rejections[m] = np.append(t_rejections[m], 0)
+                else:
+                    t_rejections[m] = np.append(t_rejections[m], 1)
+
+        for m in range(len(models)):
+            t_rejections[m] = np.delete(t_rejections[m], 0)
+            rejectionRate[m] = np.append(rejectionRate[m], t_rejections[m].mean())
+
+    for m in range(len(models)):
+        rejectionRate[m] = np.delete(rejectionRate[m], 0)
+
+    return rejectionRate
+
+
+def powerSimulations(
+    r,
+    nameSample,
+    n,
+    alpha,
+    beta,
+    cutoff,
+):
+    taus = [{}]
+    for i in range(-8, 9):
+        taus = np.append(taus, i / 4)
+    taus = np.delete(taus, 0)
+
+    rejectionRates = (
+        powerSimulation(taus, r, nameSample, n, alpha=0.5, beta=1, cutoff=0),
+        powerSimulation(
+            taus,
+            r,
+            nameSample,
+            n,
+            alpha,
+            beta,
+            cutoff,
+            outlier=True,
+            outlierMethod="Simple",
+            nOutliers=1,
+        ),
+        powerSimulation(
+            taus,
+            r,
+            nameSample,
+            n,
+            alpha,
+            beta,
+            cutoff,
+            outlier=True,
+            outlierMethod="Simple Oposite",
+            nOutliers=3,
+        ),
+    )
+
+    plotPowerFunctionComparison(
+        taus,
+        rejectionRates,
+        True,
+        "images/powerFunctions.png",
+        [1,4,5],
+    )
+

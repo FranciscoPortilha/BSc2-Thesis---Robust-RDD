@@ -143,7 +143,6 @@ def plotSamplesComparison(
                 # Fit model
                 res = jointFitRD(model, samples[i], cutoff)
                 params = res.params
-                pvalue = res.pvalues.iloc[2]
 
                 # Plot regression below cutoff
                 axs[j][l].plot(
@@ -163,7 +162,7 @@ def plotSamplesComparison(
                     + r" ($\^τ$: "
                     + str(round(params.iloc[2], 2))
                     + "("
-                    + str(round(params.iloc[2], 2))
+                    + str(round(res.pvalues.iloc[2], 2))
                     + "))",
                 )
                 # Increment model label counter
@@ -178,6 +177,35 @@ def plotSamplesComparison(
             j = 1
             l = -1
         l = l + 1
+
+    # Save figure
+    if saveFig:
+        fig.savefig(figPath)
+    else:
+        return fig
+
+
+def plotPowerFunctionComparison(taus, rejectionRates, saveFig=False, figPath="", scenarioNum=""):
+    fig, axs = plt.subplots(1, 3, figsize=[19, 7])
+    labels = ["OLS", "Huber", "Tukey", "Donut"]
+    colors = ["darkorange", "royalblue", "mediumseagreen", "mediumorchid"]
+
+    # For each scenario
+    for i in range(3):
+        c = 0
+        # Plot the power functions
+        for m in range(len(labels)):
+            axs[i].plot(
+                taus, rejectionRates[i][m], color=colors[m], label=labels[m], linewidth=0.8
+            )
+        axs[i].plot(taus, 0.05 + np.zeros_like(taus), color="r", linewidth=0.8)
+        axs[i].set_ylabel("rejection rate")
+        axs[i].set_xlabel("$τ$")
+        axs[i].set_title("Scenario "+ str(scenarioNum[i]))
+
+        # Increment figure location
+        if i == 0:
+            axs[i].legend()
 
     # Save figure
     if saveFig:

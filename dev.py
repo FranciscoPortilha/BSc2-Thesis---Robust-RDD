@@ -5,6 +5,7 @@ import src.simMetrics as met
 import src.exports as exp
 import statsmodels.api as sm
 import pandas as pd
+import numpy as np
 
 ### Test sample
 #sample = smp.genSample('Basic Linear',250,tau=-1,alpha=0.5,beta=1,L=200,outlier=False,outlierMethod='Simple Outside', nOutliers=5,printPlot=False)
@@ -36,9 +37,17 @@ import pandas as pd
 #
 ##
 # exp.scenariosHist(p, True, 'images/testfig1.png')
+#
+#r = 2
+#n = 250
+#
+#simResults = sim.simulations(r, "Basic Linear", n, tau=-1, alpha=0.5, beta=1, cutoff=0)
+#met.analyseSimResults(simResults)
 
-r = 2
-n = 250
+r=100
+n=250
+sim.powerSimulations(r, "Basic Linear", n, alpha=0.5, beta=1, cutoff=0)
 
-simResults = sim.simulations(r, "Basic Linear", n, tau=-1, alpha=0.5, beta=1, cutoff=0)
-met.analyseSimResults(simResults)
+# point6, test6, confInt6, firstSample6 = simulation(
+#        r, name, n, tau=0, L=40, cutoff=cutoff, b=0.5, outlier=False
+#    )
