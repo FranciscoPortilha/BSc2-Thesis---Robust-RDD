@@ -1,3 +1,11 @@
+"""
+Code for my bachelor thesis in Econometrics and Economics, 
+Outlier Robust Regression Discontinuity Designs.
+
+Author: Francisco Portilha (479126)
+"""
+
+# Public libraries
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -246,33 +254,77 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1):
         An array with 1 if outlier and 0 is not. (Used for coloring the dots on scatter plots)
     """
     Outliers = np.zeros_like(Y)
-    # Simple generates to outlier(s) inside the donut stripe
+    # Simple generates outlier(s) inside the donut stripe (right of the cutoff)
     if name == "Simple":
         i = 0
         for j in range(nOutliers):
-            found = True
+            notFound = True
             # Find first observation in the stripe and change outcome value to 2.5
-            while found & (i < len(X)):
-                if (X[i] >= -delta) & (X[i] < 0):
-                    Y[i] = 2.5
+            while notFound & (i < len(X)):
+                if (X[i] <= delta) & (X[i] > 0):
+                    Y[i] = 20
                     Outliers[i] = 1
-                    found = False
+                    notFound = False
                 i = i + 1
 
-    # Simple Outised generates to outlier(s) outside the donut stripe
-    if name == "Simple Outside":
+    # Simple Outised generates outlier(s) just outside the left side of the donut stripe
+    if name == "Simple Outside Left":
         i = 0
         for j in range(nOutliers):
-            found = True
+            notFound = True
             # Find first observation just outside the stripe and change outcome value to 2.5
-            while found & (i < len(X)):
+            while notFound & (i < len(X)):
                 if (X[i] >= -2 * delta) & (X[i] < -delta):
-                    Y[i] = 2.5
+                    Y[i] = -2.5
                     Outliers[i] = 1
-                    found = False
+                    notFound = False
                     i = i + 1
                 else:
                     i = i + 1
+    
+    # Simple Outised generates outlier(s) just outside the right side of the donut stripe
+    if name == "Simple Outside Right":
+        i = 0
+        for j in range(nOutliers):
+            notFound = True
+            # Find first observation just outside the stripe and change outcome value to 2.5
+            while notFound & (i < len(X)):
+                if (X[i] <= -2 * delta) & (X[i] > -delta):
+                    Y[i] = 5
+                    Outliers[i] = 1
+                    notFound = False
+                    i = i + 1
+                else:
+                    i = i + 1
+
+    # Simple Oposite generates outlier(s) on both sides of the cutoff just outside the donut stripe.
+    if name == "Simple Oposite":
+        i = 0
+        j = 0
+        for k in range(nOutliers):
+            notFound = True
+            # Find first observation just outside the left-side of the stripe and
+            # change outcome value to -2.5
+            while notFound & (i < len(X)):
+                if (X[i] >= -2 * delta) & (X[i] < -delta):
+                    Y[i] = -2.5
+                    Outliers[i] = 1
+                    notFound = False
+                    i = i + 1
+                else:
+                    i = i + 1
+
+            notFound = True
+            # Find first observation just outside the right-side of the stripe and 
+            # change outcome value to 2.5
+            while notFound & (j < len(X)):
+                if (X[j] <= 2 * delta) & (X[j] > delta):
+                    Y[j] = 2.5
+                    Outliers[j] = 1
+                    notFound = False
+                    j = j + 1
+                else:
+                    j = j + 1
     return Y, Outliers
 
 

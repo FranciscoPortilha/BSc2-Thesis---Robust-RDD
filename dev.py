@@ -7,9 +7,13 @@ import statsmodels.api as sm
 import pandas as pd
 
 ### Test sample
-# sample = smp.genSample('Basic Linear',250,tau=0.3,alpha=-0.15,beta=1,L=200,outlier=False,outlierMethod='Simple Outside', nOutliers=5,printPlot=False)
-# res = rrdd.jointFitRD('Robust Huber',sample)
-# print(res.summary())
+#sample = smp.genSample('Basic Linear',250,tau=-1,alpha=0.5,beta=1,L=200,outlier=False,outlierMethod='Simple Outside', nOutliers=5,printPlot=False)
+#res = rrdd.jointFitRD('Robust Huber',sample)
+#print(res.summary())
+#res = rrdd.jointFitRD('OLS',sample)
+#print(res.summary())
+#print(res.t_test(([0, 0, 1, 0], 0)))
+#print(res.t_test(([0, 0, 1, 0], 0), use_t=False))
 
 ### Test analytic equality between one and two different regressions
 # print(rrdd.splitFitRD('Robust Huber',sample))
@@ -33,7 +37,8 @@ import pandas as pd
 ##
 # exp.scenariosHist(p, True, 'images/testfig1.png')
 
-r = 10
+r = 2
 n = 250
 
-sim.simulations(r, "Basic Linear", n, tau=2, alpha=-1, beta=1, cutoff=0)
+simResults = sim.simulations(r, "Basic Linear", n, tau=-1, alpha=0.5, beta=1, cutoff=0)
+met.analyseSimResults(simResults)

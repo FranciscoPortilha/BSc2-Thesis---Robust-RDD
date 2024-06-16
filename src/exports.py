@@ -1,8 +1,20 @@
+"""
+Code for my bachelor thesis in Econometrics and Economics, 
+Outlier Robust Regression Discontinuity Designs.
+
+Author: Francisco Portilha (479126)
+"""
+
+# Public libraries
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import statsmodels.api as sm
 import statsmodels.stats.stattools as st
+
+# My methods. Developed for my thesis.
+from src.rrdd import jointFitRD
+from src.sample import genT
 
 
 def toLatexTable(results1, results2="", caption="", ref=""):
@@ -32,8 +44,8 @@ def toLatexTable(results1, results2="", caption="", ref=""):
 
 def plotScenariosHist(scenarios, saveFig=False, figPath=""):
     """
-    This function plots the histograms of the estimated ATE from the different 
-    scenarios, with a kernel density estimation.    
+    This function plots the histograms of the estimated ATE from the different
+    scenarios, with a kernel density estimation.
 
     Parameters
     ----------
@@ -53,7 +65,7 @@ def plotScenariosHist(scenarios, saveFig=False, figPath=""):
         c = 0
         # Plot the histogram
         for model in scenarios[i]:
-            
+
             axs[j][l].hist(
                 scenarios[i][model],
                 bins=40,
@@ -64,17 +76,16 @@ def plotScenariosHist(scenarios, saveFig=False, figPath=""):
                 alpha=0.5,
                 color=colors[c],
             )
-            axs[j][l].set_xlabel("$\^τ$",fontsize=10)
+            axs[j][l].set_xlabel(r"$\^τ$", fontsize=10)
             axs[j][l].set_ylabel("frequency")
             # Plot kerndel density function
             kde = sm.nonparametric.KDEUnivariate(scenarios[i][model])
             kde.fit()
             axs[j][l].plot(kde.support, kde.density, lw=3, zorder=10, color=colors[c])
             c = c + 1
-
-            
-
         axs[j][l].set_title("Scenario " + str(1 + i))
+
+        # Increment figure location
         if i == 0:
             axs[j][l].legend(loc="upper left")
         if i == 2:
@@ -82,13 +93,16 @@ def plotScenariosHist(scenarios, saveFig=False, figPath=""):
             l = -1
         l = l + 1
 
+    # Save figure
     if saveFig:
         fig.savefig(figPath)
     else:
         return fig
 
 
-def plotSamplesComparison(samples, saveFig=False, figPath="",cutoff=0):
+def plotSamplesComparison(
+    samples, saveFig=False, figPath="", printRegLines=False, cutoff=0
+):
     """
     This method plots a figure with the regession lines of the different estimation methods,
     for all scenarios.
@@ -105,6 +119,7 @@ def plotSamplesComparison(samples, saveFig=False, figPath="",cutoff=0):
         The value of the threshold in the running variable.
     """
     fig, axs = plt.subplots(2, 3, figsize=[20, 12])
+    models = ["OLS", "Robust Huber", "Robust Tuckey", "Donut"]
     labels = ["OLS", "Huber", "Tukey", "Donut"]
     colors = ["darkorange", "royalblue", "mediumseagreen", "mediumorchid"]
     cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["grey", "red"])
@@ -112,44 +127,60 @@ def plotSamplesComparison(samples, saveFig=False, figPath="",cutoff=0):
     # For each scenario
     for i in range(6):
         # Plot scatter observations
-        axs[j][l].scatter(samples[i].X, samples[i].Y, s=6, c=samples[i].Outlier, cmap=cmap)
+        axs[j][l].scatter(
+            samples[i].X, samples[i].Y, s=6, c=samples[i].Outlier, cmap=cmap
+        )
         axs[j][l].set_xlabel("$X_i$")
         axs[j][l].set_ylabel("$Y_i$")
 
-        
-        #x_below = np.linspace(min(samples[i].X), cutoff, 100)
-        #x_above = np.linspace(cutoff, max(samples[i].X), 100)
-        ## Plot regresion lines
-        #for model in samples[i][1]:
-        #    c=0
-        #    plt.plot(
-        #        x_below,
-        #        params1_below.iloc[0] + params1_below.iloc[1] * x_below,
-        #        color=colors[c],
-        #        linewidth=0.7,
-        #    )
-        #    plt.plot(
-        #        x_above,
-        #        params1_above.iloc[0] + params1_above.iloc[1] * x_above,
-        #        color="b",
-        #        linewidth=0.7,
-        #        label=labels[c] + " (ate: " + str(round(tau1, 2)) + ")",
-        #    )
-        #
-        #
-        #
-        #plt.legend()
-        
-        axs[j][l].set_title("Scenario " + str(1 + i))
-        if i == 0:
+        # (Re-fit) and plot regression lines
+        if printRegLines:
+            x_below = np.linspace(min(samples[i].X), cutoff, 100)
+            x_above = np.linspace(cutoff, max(samples[i].X), 100)
+            c = 0
+            # For each estimation method
+            for model in models:
+                # Fit model
+                res = jointFitRD(model, samples[i], cutoff)
+                params = res.params
+                pvalue = res.pvalues.iloc[2]
+
+                # Plot regression below cutoff
+                axs[j][l].plot(
+                    x_below,
+                    params.iloc[0] + params.iloc[1] * x_below,
+                    color=colors[c],
+                    linewidth=0.7,
+                )
+                # Plot regression above cutoff
+                axs[j][l].plot(
+                    x_above,
+                    (params.iloc[0] + params.iloc[2])
+                    + (params.iloc[1] + params.iloc[3]) * x_above,
+                    color=colors[c],
+                    linewidth=0.7,
+                    label=labels[c]
+                    + r" ($\^τ$: "
+                    + str(round(params.iloc[2], 2))
+                    + "("
+                    + str(round(params.iloc[2], 2))
+                    + "))",
+                )
+                # Increment model label counter
+                c = c + 1
+
+            # Legend and title
             axs[j][l].legend(loc="upper left")
+        axs[j][l].set_title("Scenario " + str(1 + i))
+
+        # Increment figure location
         if i == 2:
             j = 1
             l = -1
         l = l + 1
 
+    # Save figure
     if saveFig:
         fig.savefig(figPath)
     else:
         return fig
-
