@@ -207,13 +207,13 @@ def analyseSimResults(simResults, tau, printToLatex=False):
         np.transpose(
             np.array(
                 [
-                    point1.mean()-tau,
+                    point1.mean() - tau,
                     point1.std(),
                     compRMSE(point1, tau),
-                    point2.mean()-tau,
+                    point2.mean() - tau,
                     point2.std(),
                     compRMSE(point2, tau),
-                    point3.mean()-tau,
+                    point3.mean() - tau,
                     point3.std(),
                     compRMSE(point3, tau),
                 ]
@@ -226,13 +226,13 @@ def analyseSimResults(simResults, tau, printToLatex=False):
         np.transpose(
             np.array(
                 [
-                    point4.mean()-tau,
+                    point4.mean() - tau,
                     point4.std(),
                     compRMSE(point4, tau),
-                    point5.mean()-tau,
+                    point5.mean() - tau,
                     point5.std(),
                     compRMSE(point5, tau),
-                    point6.mean()-tau,
+                    point6.mean() - tau,
                     point6.std(),
                     compRMSE(point6, tau),
                 ]
@@ -418,19 +418,40 @@ def analyseSimResults(simResults, tau, printToLatex=False):
         columns=labelsResults4b,
         index=row,
     )
-    
 
     # Captions for latex tablex
     caption1 = (
         "Bias, standard deviation and root mean squared error of the point estimates "
-        + "of the treatment effect. Simulation with r = "+str(len(point1))+" , τ = " + str(tau)+"."
+        + "of the treatment effect. From the simulation with $r = "
+        + str(len(point1))
+        + "$ , $τ = "
+        + str(tau)
+        + "$."
     )
     caption2 = (
-        "Skewness, kurtosis and jarque-bera test statistic of the simulated point estimates."
-        + "Simulation with r = "+str(len(point1))+" , τ = " + str(tau)+"."
+        "Skewness, kurtosis and jarque-bera test statistic of the simulated point estimates. "
+        + "From the simulation with $r = "
+        + str(len(point1))
+        + "$ , $τ = "
+        + str(tau)
+        + "$."
     )
-    caption3 = "Correct coverage of the confidence intervals and length. For significance level of $\\alpha=0.05$"
-    caption4 = "Type I error of t-test statistic of the simulated point estimates for $h_0:\\hat{\\tau}=\\tau$, "
+    caption3 = (
+        "Correct coverage of the confidence intervals for $\\tau$ and their length. For significance level of $\\alpha=0.05$. "
+        + "From the simulation with $r = "
+        + str(len(point1))
+        + "$ , $τ = "
+        + str(tau)
+        + "$."
+    )
+    caption4 = (
+        "Type I and type II errors of t-test for $h_0:\\hat{\\tau}=\\tau$ and $h_0:\\hat{\\tau}=0$ repectively, "
+        + "from the estimated treatment effects. From the simulation with $r = "
+        + str(len(point1))
+        + "$ , $τ = "
+        + str(tau)
+        + "$."
+    )
     captions = caption1, caption2, caption3, caption4
     # Plot figures and print latex tables
     plotSamplesComparison(
@@ -443,7 +464,7 @@ def analyseSimResults(simResults, tau, printToLatex=False):
             firstSample6,
         ],
         True,
-        "images/sampleComparison_tau_"+str(tau)+".png",
+        "images/sampleComparison_tau_" + str(tau) + ".png",
     )
     plotSamplesComparison(
         [
@@ -455,14 +476,14 @@ def analyseSimResults(simResults, tau, printToLatex=False):
             firstSample6,
         ],
         True,
-        "images/regressionComparison_tau_"+str(tau)+".png",
+        "images/regressionComparison_tau_" + str(tau) + ".png",
         True,
     )
     plotScenariosHist(
         [point1, point2, point3, point4, point5, point6],
         tau,
         True,
-        "images/scenariosHist_tau_"+str(tau)+".png",
+        "images/scenariosHist_tau_" + str(tau) + ".png",
     )
     print("")
     print(
