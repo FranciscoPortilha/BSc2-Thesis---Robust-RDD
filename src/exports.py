@@ -42,7 +42,7 @@ def toLatexTable(results1, results2="", caption="", ref=""):
         )
 
 
-def plotScenariosHist(scenarios, saveFig=False, figPath=""):
+def plotScenariosHist(scenarios, tau, saveFig=False, figPath=""):
     """
     This function plots the histograms of the estimated ATE from the different
     scenarios, with a kernel density estimation.
@@ -83,6 +83,7 @@ def plotScenariosHist(scenarios, saveFig=False, figPath=""):
             kde.fit()
             axs[j][l].plot(kde.support, kde.density, lw=3, zorder=10, color=colors[c])
             c = c + 1
+        axs[j][l].axvline(x=tau)
         axs[j][l].set_title("Scenario " + str(1 + i))
 
         # Increment figure location and add legend

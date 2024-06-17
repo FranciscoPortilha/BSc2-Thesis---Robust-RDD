@@ -46,6 +46,7 @@ import numpy as np
 
 r1, r2, n = 0,1000, 250
 
+
 outlierScenarios = (
     "Simple Outside Right",
     1,

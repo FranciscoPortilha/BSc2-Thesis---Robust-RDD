@@ -209,13 +209,13 @@ def analyseSimResults(simResults, tau, printToLatex=False):
                 [
                     point1.mean()-tau,
                     point1.std(),
-                    compRMSE(point1, 2),
+                    compRMSE(point1, tau),
                     point2.mean()-tau,
                     point2.std(),
-                    compRMSE(point2, 2),
+                    compRMSE(point2, tau),
                     point3.mean()-tau,
                     point3.std(),
-                    compRMSE(point3, 2),
+                    compRMSE(point3, tau),
                 ]
             )
         ),
@@ -228,13 +228,13 @@ def analyseSimResults(simResults, tau, printToLatex=False):
                 [
                     point4.mean()-tau,
                     point4.std(),
-                    compRMSE(point4, 2),
+                    compRMSE(point4, tau),
                     point5.mean()-tau,
                     point5.std(),
-                    compRMSE(point5, 2),
+                    compRMSE(point5, tau),
                     point6.mean()-tau,
                     point6.std(),
-                    compRMSE(point6, 2),
+                    compRMSE(point6, tau),
                 ]
             )
         ),
@@ -468,6 +468,7 @@ def analyseSimResults(simResults, tau, printToLatex=False):
     )
     plotScenariosHist(
         [point1, point2, point3, point4, point5, point6],
+        tau,
         True,
         "images/scenariosHist_tau_"+str(tau)+".png",
     )
