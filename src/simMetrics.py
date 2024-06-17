@@ -83,30 +83,30 @@ def analyseSimResults(simResults, tau, printToLatex=False):
         Object with all the results from simulations method
     """
     (
-        point1,
-        test1,
-        confInt1,
         firstSample1,
-        point2,
-        test2,
-        confInt2,
         firstSample2,
-        point3,
-        test3,
-        confInt3,
         firstSample3,
-        point4,
-        test4,
-        confInt4,
         firstSample4,
-        point5,
-        test5,
-        confInt5,
         firstSample5,
-        point6,
-        test6,
-        confInt6,
         firstSample6,
+        point1,
+        point2,
+        point3,
+        point4,
+        point5,
+        point6,
+        confInt1,
+        confInt2,
+        confInt3,
+        confInt4,
+        confInt5,
+        confInt6,
+        test1,
+        test2,
+        test3,
+        test4,
+        test5,
+        test6,
     ) = simResults
     # Create lables that are used in multiple tables
     labelsScenariosA_2 = [
@@ -365,25 +365,22 @@ def analyseSimResults(simResults, tau, printToLatex=False):
 
     # Create labels for dataframe with results about type 1 error of t-test
     labelsResults4 = [
-        "10\\%",
-         "5\\%",
-         "1\\%",
-        "10\\%",
-         "5\\%",
-         "1\\%",
-        "10\\%",
-         "5\\%",
-         "1\\%",
+        "T.I",
+        "T.II",
+        "T.I",
+        "T.II",
+        "T.I",
+        "T.II",
     ]
     labelsResults4a = pd.MultiIndex.from_arrays(
         [
-            labelsScenariosA,
+            labelsScenariosA_2,
             labelsResults4,
         ]
     )
     labelsResults4b = pd.MultiIndex.from_arrays(
         [
-            labelsScenariosB,
+            labelsScenariosB_2,
             labelsResults4,
         ]
     )
@@ -393,15 +390,12 @@ def analyseSimResults(simResults, tau, printToLatex=False):
         np.transpose(
             np.array(
                 [
-                    test1[0].mean(),
-                    test1[1].mean(),
-                    test1[2].mean(),
-                    test2[0].mean(),
-                    test2[1].mean(),
-                    test2[2].mean(),
-                    test3[0].mean(),
-                    test3[1].mean(),
-                    test3[2].mean(),
+                    test1[0][1].mean(),
+                    test1[1][1].mean(),
+                    test2[0][1].mean(),
+                    test2[1][1].mean(),
+                    test3[0][1].mean(),
+                    test3[1][1].mean(),
                 ]
             )
         ),
@@ -412,30 +406,28 @@ def analyseSimResults(simResults, tau, printToLatex=False):
         np.transpose(
             np.array(
                 [
-                    test4[0].mean(),
-                    test4[1].mean(),
-                    test4[2].mean(),
-                    test5[0].mean(),
-                    test5[1].mean(),
-                    test5[2].mean(),
-                    test6[0].mean(),
-                    test6[1].mean(),
-                    test6[2].mean(),
+                    test4[0][1].mean(),
+                    test4[1][1].mean(),
+                    test5[0][1].mean(),
+                    test5[1][1].mean(),
+                    test6[0][1].mean(),
+                    test6[1][1].mean(),
                 ]
             )
         ),
         columns=labelsResults4b,
         index=row,
     )
+    
 
     # Captions for latex tablex
     caption1 = (
         "Bias, standard deviation and root mean squared error of the point estimates "
-        + "of the treatment effect"
+        + "of the treatment effect. Simulation with r = "+str(len(point1))+" , τ = " + str(tau)+"."
     )
     caption2 = (
-        "Jarque-Bera test statistic of the simulated point estimates. "
-        + "T-test incorrect rejection of $H_0: \\hat{\\tau}=\\tau$ (normal and student's-t distributions)"
+        "Skewness, kurtosis and jarque-bera test statistic of the simulated point estimates."
+        + "Simulation with r = "+str(len(point1))+" , τ = " + str(tau)+"."
     )
     caption3 = "Correct coverage of the confidence intervals and length. For significance level of $\\alpha=0.05$"
     caption4 = "Type I error of t-test statistic of the simulated point estimates for $h_0:\\hat{\\tau}=\\tau$, "

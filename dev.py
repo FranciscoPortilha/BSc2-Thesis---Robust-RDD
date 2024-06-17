@@ -44,7 +44,7 @@ import numpy as np
 # simResults = sim.simulations(r, "Basic Linear", n, tau=-1, alpha=0.5, beta=1, cutoff=0)
 # met.analyseSimResults(simResults)
 
-r1, r2, n = 0,1000, 250
+r1, r2, n = 2,10, 25
 
 
 outlierScenarios = (
@@ -59,35 +59,36 @@ outlierScenarios = (
     "Simple Oposite Inside",
     3,
 )
-#sim.powerSimulations(
-#    r1,
+sim.powerSimulations(
+    r1,
+    "Basic Linear",
+    n,
+    alpha=0.5,
+    beta=1,
+    cutoff=0,
+    parametersScenarios=outlierScenarios,
+    specialTau=-0.5,
+)
+#sim.simulations(
+#    r2,
+##    "Basic Linear",
+##    n,
+##    tau=-0.5,
+##    alpha=0.5,
+##    beta=1,
+##    cutoff=0,
+#    parametersScenarios=outlierScenarios,
+#)
+#sim.simulations(
+#    r2,
 #    "Basic Linear",
 #    n,
+#    tau=0, 
 #    alpha=0.5,
 #    beta=1,
 #    cutoff=0,
 #    parametersScenarios=outlierScenarios,
 #)
-sim.simulations(
-    r2,
-    "Basic Linear",
-    n,
-    tau=-0.5,
-    alpha=0.5,
-    beta=1,
-    cutoff=0,
-    parametersScenarios=outlierScenarios,
-)
-sim.simulations(
-    r2,
-    "Basic Linear",
-    n,
-    tau=0, 
-    alpha=0.5,
-    beta=1,
-    cutoff=0,
-    parametersScenarios=outlierScenarios,
-)
 
 # point6, test6, confInt6, firstSample6 = simulation(
 #        r, name, n, tau=0, L=40, cutoff=cutoff, b=0.5, outlier=False
