@@ -97,6 +97,7 @@ def plotScenariosHist(scenarios, tau, saveFig=False, figPath=""):
     # Save figure
     if saveFig:
         fig.savefig(figPath)
+        plt.close()
     else:
         return fig
 
@@ -182,6 +183,8 @@ def plotSamplesComparison(
     # Save figure
     if saveFig:
         fig.savefig(figPath)
+        plt.close()
+
     else:
         return fig
 
@@ -224,11 +227,12 @@ def plotPowerFunctionComparison(taus, rejectionRates, saveFig=False, figPath="")
     # Save figure
     if saveFig:
         fig.savefig(figPath)
+        plt.close()
     else:
         return fig
 
 
-def plotAsymptoticComparison(asymptotics, saveFig=False, figPath=""):
+def plotAsymptoticComparison(tau, asymptotics, saveFig=False, figPath=""):
     fileLabels = (
         "bias",
         "stDev",
@@ -240,7 +244,7 @@ def plotAsymptoticComparison(asymptotics, saveFig=False, figPath=""):
         "t2Error",
     )
     plotyLabels = (
-        r"Bias($\^τ$)",
+        r"|Bias($\^τ$)|",
         r"St.dev($\^τ$)",
         r"RMSE($\^τ$)",
         "Efficiency relative to Tukey",
@@ -251,7 +255,7 @@ def plotAsymptoticComparison(asymptotics, saveFig=False, figPath=""):
     )
 
     # For each metric plot asymptotic functions
-    for metric in range(7):
+    for metric in range(8):
         # Initialise figure, labels and colors
         fig, axs = plt.subplots(2, 3, figsize=[19, 11])
         labels = ["OLS", "Huber", "Tukey", "Donut"]
@@ -266,6 +270,14 @@ def plotAsymptoticComparison(asymptotics, saveFig=False, figPath=""):
             for model in range(len(labels)):
                 if (metric==3) & (model == 2):
                     0
+                elif metric==0:
+                    axs[v][h].plot(
+                        asymptotics[0][8],
+                        np.abs(asymptotics[scenario][metric][model]),
+                        color=colors[model],
+                        label=labels[model],
+                        linewidth=0.8,
+                    )
                 else:    
                     axs[v][h].plot(
                         asymptotics[0][8],
@@ -325,6 +337,7 @@ def plotAsymptoticComparison(asymptotics, saveFig=False, figPath=""):
 
         # Save figure
         if saveFig:
-            fig.savefig(figPath + "_" + fileLabels[metric] + ".png")
+            fig.savefig(figPath + "_" + fileLabels[metric] + "_" + str(tau) +".png")
+            plt.close()
         else:
             return fig

@@ -39,29 +39,15 @@ def powerSimulation(
     outlierMethod="",
     nOutliers=0,
 ):
-
-    pointEstimation, testValues, ciValues, firstSample = {}, {}, {}, {}
     rejectionRate = [{}, {}, {}, {}]
     labels = ["OLS", "Huber", "Tukey", "Donut"]
+    detailedResults = [{}, {}]
 
-    for t in range(17):
+    k = 0
+    for t in range(len(taus)):
         # If it is a tau of special interest do a simulation with detailed results
-        if taus[t] == specialTau:
-            (
-                pointEstimation,
-                testValues,
-                ciValues,
-                firstSample,
-                asympBias,
-                asympStDev,
-                asympRmse,
-                asympEffi,
-                asympCiCc,
-                asympCiSize,
-                asympT1Error,
-                asympT2Error,
-                nRange,
-            ) = asymptoticSimulation(
+        if taus[t] in specialTau:
+            detailedResults[k] = asymptoticSimulation(
                 r,
                 nameSample,
                 n,
@@ -77,8 +63,9 @@ def powerSimulation(
             )
             for m in range(4):
                 rejectionRate[m] = np.append(
-                    rejectionRate[m], testValues[1][1][labels[m]].mean()
+                    rejectionRate[m], detailedResults[k][1][1][1][labels[m]].mean()
                 )
+            k=k+1
 
         # If tau is not of special interest do a simulation that only record the power of t-test
         else:
@@ -104,21 +91,7 @@ def powerSimulation(
 
     return (
         rejectionRate,
-        pointEstimation,
-        testValues,
-        ciValues,
-        firstSample,
-        (
-            asympBias,
-            asympStDev,
-            asympRmse,
-            asympEffi,
-            asympCiCc,
-            asympCiSize,
-            asympT1Error,
-            asympT2Error,
-            nRange,
-        ),
+        detailedResults,
     )
 
 
@@ -197,15 +170,7 @@ def asymptoticSimulation(
         testValues,
         ciValues,
         firstSample,
-        bias,
-        stDev,
-        rmse,
-        effi,
-        ciCc,
-        ciSize,
-        t1Error,
-        t2Error,
-        nRange,
+        (bias, stDev, rmse, effi, ciCc, ciSize, t1Error, t2Error, nRange),
     )
 
 
@@ -310,7 +275,7 @@ def simulationDetailed(
     firstSample: DataFrame
         A dataframe object with the first sample generated.
     """
-
+    
     # Creat empty output arrays
     point = [{}, {}, {}, {}]
 
@@ -396,7 +361,6 @@ def simulationDetailed(
                 ci_lenght[2][m],
                 res.conf_int(0.01)[1].iloc[2] - res.conf_int(0.01)[0].iloc[2],
             )
-
             # Calculate if t test statistic of Ho: t == tau
             if tau == 0:
                 p_t1 = res.pvalues.iloc[2]
@@ -672,118 +636,141 @@ def powerSimulations(
         taus = np.append(taus, i / 4)
     taus = np.delete(taus, 0)
 
-    rejectionRate1, pointEstimation1, testValues1, ciValues1, firstSample1, asymp1 = (
-        powerSimulation(taus, specialTau, r, nameSample, n, alpha, beta, cutoff=0)
+    rejectionRate1, detailedResults1 = powerSimulation(
+        taus, specialTau, r, nameSample, n, alpha, beta, cutoff=0
     )
 
-    rejectionRate2, pointEstimation2, testValues2, ciValues2, firstSample2, asymp2 = (
-        powerSimulation(
-            taus,
-            specialTau,
-            r,
-            nameSample,
-            n,
-            alpha,
-            beta,
-            cutoff,
-            outlier=True,
-            outlierMethod=scenario2_method,
-            nOutliers=scenario2_num,
+    rejectionRate2, detailedResults2 = powerSimulation(
+        taus,
+        specialTau,
+        r,
+        nameSample,
+        n,
+        alpha,
+        beta,
+        cutoff,
+        outlier=True,
+        outlierMethod=scenario2_method,
+        nOutliers=scenario2_num,
+    )
+
+    rejectionRate3, detailedResults3 = powerSimulation(
+        taus,
+        specialTau,
+        r,
+        nameSample,
+        n,
+        alpha,
+        beta,
+        cutoff,
+        outlier=True,
+        outlierMethod=scenario3_method,
+        nOutliers=scenario3_num,
+    )
+
+    rejectionRate4, detailedResults4 = powerSimulation(
+        taus,
+        specialTau,
+        r,
+        nameSample,
+        n,
+        alpha,
+        beta,
+        cutoff,
+        outlier=True,
+        outlierMethod=scenario4_method,
+        nOutliers=scenario4_num,
+    )
+
+    rejectionRate5, detailedResults5 = powerSimulation(
+        taus,
+        specialTau,
+        r,
+        nameSample,
+        n,
+        alpha,
+        beta,
+        cutoff,
+        outlier=True,
+        outlierMethod=scenario5_method,
+        nOutliers=scenario5_num,
+    )
+
+    rejectionRate6, detailedResults6 = powerSimulation(
+        taus,
+        specialTau,
+        r,
+        nameSample,
+        n,
+        alpha,
+        beta,
+        cutoff,
+        outlier=True,
+        outlierMethod=scenario6_method,
+        nOutliers=scenario6_num,
+    )
+
+    for t in range(len(specialTau)):
+        (pointEstim1, testValues1, ciValues1, firstSample1, asymp1) = detailedResults1[
+            t
+        ]
+        (pointEstim2, testValues2, ciValues2, firstSample2, asymp2) = detailedResults2[
+            t
+        ]
+        (pointEstim3, testValues3, ciValues3, firstSample3, asymp3) = detailedResults3[
+            t
+        ]
+        (pointEstim4, testValues4, ciValues4, firstSample4, asymp4) = detailedResults4[
+            t
+        ]
+        (pointEstim5, testValues5, ciValues5, firstSample5, asymp5) = detailedResults5[
+            t
+        ]
+        (pointEstim6, testValues6, ciValues6, firstSample6, asymp6) = detailedResults6[
+            t
+        ]
+        simResults = (
+            firstSample1,
+            firstSample2,
+            firstSample3,
+            firstSample4,
+            firstSample5,
+            firstSample6,
+            pointEstim1,
+            pointEstim2,
+            pointEstim3,
+            pointEstim4,
+            pointEstim5,
+            pointEstim6,
+            ciValues1,
+            ciValues2,
+            ciValues3,
+            ciValues4,
+            ciValues5,
+            ciValues6,
+            testValues1,
+            testValues2,
+            testValues3,
+            testValues4,
+            testValues5,
+            testValues6,
         )
-    )
 
-    rejectionRate3, pointEstimation3, testValues3, ciValues3, firstSample3, asymp3 = (
-        powerSimulation(
-            taus,
-            specialTau,
-            r,
-            nameSample,
-            n,
-            alpha,
-            beta,
-            cutoff,
-            outlier=True,
-            outlierMethod=scenario3_method,
-            nOutliers=scenario3_num,
+        analyseSimResults(simResults, specialTau[t])
+        plotAsymptoticComparison(
+            specialTau[t],
+            (
+                asymp1,
+                asymp2,
+                asymp3,
+                asymp4,
+                asymp5,
+                asymp6,
+            ),
+            True,
+            "images/asymptotic",
         )
-    )
 
-    rejectionRate4, pointEstimation4, testValues4, ciValues4, firstSample4, asymp4 = (
-        powerSimulation(
-            taus,
-            specialTau,
-            r,
-            nameSample,
-            n,
-            alpha,
-            beta,
-            cutoff,
-            outlier=True,
-            outlierMethod=scenario4_method,
-            nOutliers=scenario4_num,
-        )
-    )
-
-    rejectionRate5, pointEstimation5, testValues5, ciValues5, firstSample5, asymp5 = (
-        powerSimulation(
-            taus,
-            specialTau,
-            r,
-            nameSample,
-            n,
-            alpha,
-            beta,
-            cutoff,
-            outlier=True,
-            outlierMethod=scenario5_method,
-            nOutliers=scenario5_num,
-        )
-    )
-
-    rejectionRate6, pointEstimation6, testValues6, ciValues6, firstSample6, asymp6 = (
-        powerSimulation(
-            taus,
-            specialTau,
-            r,
-            nameSample,
-            n,
-            alpha,
-            beta,
-            cutoff,
-            outlier=True,
-            outlierMethod=scenario6_method,
-            nOutliers=scenario6_num,
-        )
-    )
-
-    simResults = (
-        firstSample1,
-        firstSample2,
-        firstSample3,
-        firstSample4,
-        firstSample5,
-        firstSample6,
-        pointEstimation1,
-        pointEstimation2,
-        pointEstimation3,
-        pointEstimation4,
-        pointEstimation5,
-        pointEstimation6,
-        ciValues1,
-        ciValues2,
-        ciValues3,
-        ciValues4,
-        ciValues5,
-        ciValues6,
-        testValues1,
-        testValues2,
-        testValues3,
-        testValues4,
-        testValues5,
-        testValues6,
-    )
-
-    analyseSimResults(simResults, specialTau)
     plotPowerFunctionComparison(
         taus,
         (
@@ -796,16 +783,4 @@ def powerSimulations(
         ),
         True,
         "images/powerFunctions.png",
-    )
-    plotAsymptoticComparison(
-        (
-            asymp1,
-            asymp2,
-            asymp3,
-            asymp4,
-            asymp5,
-            asymp6,
-        ),
-        True,
-        "images/asymptotic",
     )

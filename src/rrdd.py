@@ -78,7 +78,7 @@ def fit(name, sample, intercept, cutoff=0, jointFit=False):
     elif name == "Donut":
         sample = sample.loc[np.abs(sample.X - cutoff) >= 0.1]
         exog = prepExog(sample, intercept, jointFit)
-        res = sm.OLS(sample.Y, exog.to_numpy())
+        res = sm.OLS(sample.Y, exog)
 
     else:
         return NameError("Type of Estimation method is not recognised")
