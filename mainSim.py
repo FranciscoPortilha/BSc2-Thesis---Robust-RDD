@@ -1,9 +1,31 @@
-import src.exports as exp
-from src.simulation import simulations
+import numpy as np
+from src.simulation import powerSimulations
 
 
-r = 10
-n = 300
+r, n = 5, 30
+outlierScenarios = (
+    "Simple Outside Right",
+    1,
+    "Simple Oposite",
+    3,
+    "Simple Outside Left",
+    2,
+    "Simple Outside Right",
+    3,
+    "Simple Oposite Inside",
+    3,
+)
 
-results1, results2 = simulations(r,'Basic Linear',n,tau=2,alpha=-1,beta=1,cutoff=0)
-exp.toLatexTable(results1, results2,r,n)
+np.random.seed(123456)
+powerSimulations(
+    r,
+    "Basic Linear",
+    n,
+    alpha=0.5,
+    beta=1,
+    cutoff=0,
+    parametersScenarios=outlierScenarios,
+    specialTau=[-0.5,0],
+    computeAsymptotics=True,
+    prinToLatex=False
+)

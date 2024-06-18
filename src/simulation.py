@@ -38,6 +38,7 @@ def powerSimulation(
     outlier=False,
     outlierMethod="",
     nOutliers=0,
+    computeAsymptotics=False,
 ):
     rejectionRate = [{}, {}, {}, {}]
     labels = ["OLS", "Huber", "Tukey", "Donut"]
@@ -47,25 +48,41 @@ def powerSimulation(
     for t in range(len(taus)):
         # If it is a tau of special interest do a simulation with detailed results
         if taus[t] in specialTau:
-            detailedResults[k] = asymptoticSimulation(
-                r,
-                nameSample,
-                n,
-                taus[t],
-                alpha,
-                beta,
-                cutoff=cutoff,
-                L=L,
-                b=b,
-                outlier=outlier,
-                outlierMethod=outlierMethod,
-                nOutliers=nOutliers,
-            )
+            if computeAsymptotics:
+                detailedResults[k] = asymptoticSimulation(
+                    r,
+                    nameSample,
+                    n,
+                    taus[t],
+                    alpha,
+                    beta,
+                    cutoff=cutoff,
+                    L=L,
+                    b=b,
+                    outlier=outlier,
+                    outlierMethod=outlierMethod,
+                    nOutliers=nOutliers,
+                )
+            else:
+                detailedResults[k] = simulationDetailed(
+                    r,
+                    nameSample,
+                    n,
+                    taus[t],
+                    alpha,
+                    beta,
+                    cutoff=cutoff,
+                    L=L,
+                    b=b,
+                    outlier=outlier,
+                    outlierMethod=outlierMethod,
+                    nOutliers=nOutliers,
+                )
             for m in range(4):
                 rejectionRate[m] = np.append(
                     rejectionRate[m], detailedResults[k][1][1][1][labels[m]].mean()
                 )
-            k=k+1
+            k = k + 1
 
         # If tau is not of special interest do a simulation that only record the power of t-test
         else:
@@ -121,10 +138,10 @@ def asymptoticSimulation(
         [{}, {}, {}, {}],
         [{}, {}, {}, {}],
     )
-    for k in range(13):
+    for k in range(12):
         n = int(nInit * np.power(1.6, k - 3))
         nRange = np.append(nRange, n)
-        pointEstimation_n, testValues_n, ciValues_n, firstSample_n = simulationDetailed(
+        pointEstimation_n, testValues_n, ciValues_n, firstSample_n, notUsed = simulationDetailed(
             r,
             nameSample,
             n,
@@ -275,7 +292,7 @@ def simulationDetailed(
     firstSample: DataFrame
         A dataframe object with the first sample generated.
     """
-    
+
     # Creat empty output arrays
     point = [{}, {}, {}, {}]
 
@@ -479,7 +496,7 @@ def simulationDetailed(
         i = i + 1
 
     # Return results
-    return pointEstimation, testValues, ciValues, firstSample
+    return pointEstimation, testValues, ciValues, firstSample, {}
 
 
 def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0, parametersScenarios=""):
@@ -617,7 +634,16 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0, parametersScenarios
 
 
 def powerSimulations(
-    r, nameSample, n, alpha, beta, cutoff=0, parametersScenarios="", specialTau=0
+    r,
+    nameSample,
+    n,
+    alpha,
+    beta,
+    cutoff=0,
+    parametersScenarios="",
+    specialTau=0,
+    computeAsymptotics=False,
+    prinToLatex=False,
 ):
     (
         scenario2_method,
@@ -637,7 +663,15 @@ def powerSimulations(
     taus = np.delete(taus, 0)
 
     rejectionRate1, detailedResults1 = powerSimulation(
-        taus, specialTau, r, nameSample, n, alpha, beta, cutoff=0
+        taus,
+        specialTau,
+        r,
+        nameSample,
+        n,
+        alpha,
+        beta,
+        cutoff=0,
+        computeAsymptotics=computeAsymptotics,
     )
 
     rejectionRate2, detailedResults2 = powerSimulation(
@@ -652,6 +686,7 @@ def powerSimulations(
         outlier=True,
         outlierMethod=scenario2_method,
         nOutliers=scenario2_num,
+        computeAsymptotics=computeAsymptotics,
     )
 
     rejectionRate3, detailedResults3 = powerSimulation(
@@ -666,6 +701,7 @@ def powerSimulations(
         outlier=True,
         outlierMethod=scenario3_method,
         nOutliers=scenario3_num,
+        computeAsymptotics=computeAsymptotics,
     )
 
     rejectionRate4, detailedResults4 = powerSimulation(
@@ -680,6 +716,7 @@ def powerSimulations(
         outlier=True,
         outlierMethod=scenario4_method,
         nOutliers=scenario4_num,
+        computeAsymptotics=computeAsymptotics,
     )
 
     rejectionRate5, detailedResults5 = powerSimulation(
@@ -694,6 +731,7 @@ def powerSimulations(
         outlier=True,
         outlierMethod=scenario5_method,
         nOutliers=scenario5_num,
+        computeAsymptotics=computeAsymptotics,
     )
 
     rejectionRate6, detailedResults6 = powerSimulation(
@@ -708,6 +746,7 @@ def powerSimulations(
         outlier=True,
         outlierMethod=scenario6_method,
         nOutliers=scenario6_num,
+        computeAsymptotics=computeAsymptotics,
     )
 
     for t in range(len(specialTau)):
@@ -756,20 +795,21 @@ def powerSimulations(
             testValues6,
         )
 
-        analyseSimResults(simResults, specialTau[t])
-        plotAsymptoticComparison(
-            specialTau[t],
-            (
-                asymp1,
-                asymp2,
-                asymp3,
-                asymp4,
-                asymp5,
-                asymp6,
-            ),
-            True,
-            "images/asymptotic",
-        )
+        analyseSimResults(simResults, specialTau[t], prinToLatex)
+        if computeAsymptotics:
+            plotAsymptoticComparison(
+                specialTau[t],
+                (
+                    asymp1,
+                    asymp2,
+                    asymp3,
+                    asymp4,
+                    asymp5,
+                    asymp6,
+                ),
+                True,
+                "images/asymptotic",
+            )
 
     plotPowerFunctionComparison(
         taus,
