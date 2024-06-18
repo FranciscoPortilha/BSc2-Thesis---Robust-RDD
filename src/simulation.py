@@ -6,12 +6,14 @@ Author: Francisco Portilha (479126)
 """
 
 # Public libraries
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+import statsmodels.api as sm
 
 # My methods. Developed for my thesis.
 from src.exports import (
+    plotAsymptoticComparison,
     plotPowerFunctionComparison,
     plotSamplesComparison,
     plotScenariosHist,
@@ -45,7 +47,20 @@ def powerSimulation(
     for t in range(17):
         # If it is a tau of special interest do a simulation with detailed results
         if taus[t] == specialTau:
-            pointEstimation, testValues, ciValues, firstSample = simulationDetailed(
+            (
+                pointEstimation,
+                testValues,
+                ciValues,
+                firstSample,
+                asympBias,
+                asympStDev,
+                asympRmse,
+                asympCiCc,
+                asympCiSize,
+                asympT1Error,
+                asympT2Error,
+                nRange,
+            ) = asymptoticSimulation(
                 r,
                 nameSample,
                 n,
@@ -86,7 +101,104 @@ def powerSimulation(
     for m in range(4):
         rejectionRate[m] = np.delete(rejectionRate[m], 0)
 
-    return rejectionRate, pointEstimation, testValues, ciValues, firstSample
+    return (
+        rejectionRate,
+        pointEstimation,
+        testValues,
+        ciValues,
+        firstSample,
+        (
+            asympBias,
+            asympStDev,
+            asympRmse,
+            asympCiCc,
+            asympCiSize,
+            asympT1Error,
+            asympT2Error,
+            nRange,
+        ),
+    )
+
+
+def asymptoticSimulation(
+    r,
+    nameSample,
+    nInit,
+    tau=0,
+    alpha=0,
+    beta=0,
+    L=0,
+    cutoff=0,
+    b=1,
+    outlier=False,
+    outlierMethod="",
+    nOutliers=0,
+):
+    nRange = {}
+    labels = ["OLS", "Huber", "Tukey", "Donut"]
+    bias, stDev, rmse, ciCc, ciSize, t1Error, t2Error = (
+        [{}, {}, {}, {}],
+        [{}, {}, {}, {}],
+        [{}, {}, {}, {}],
+        [{}, {}, {}, {}],
+        [{}, {}, {}, {}],
+        [{}, {}, {}, {}],
+        [{}, {}, {}, {}],
+    )
+    for k in range(2):
+        n = nInit * np.power(1.6, k)
+        nRange = np.append(nRange, n)
+        pointEstimation_n, testValues_n, ciValues_n, firstSample_n = simulationDetailed(
+            r,
+            nameSample,
+            n,
+            tau,
+            alpha,
+            beta,
+            L,
+            cutoff,
+            b,
+            outlier,
+            outlierMethod,
+            nOutliers,
+        )
+        if k == 0:
+            pointEstimation, testValues, ciValues, firstSample = (
+                pointEstimation_n,
+                testValues_n,
+                ciValues_n,
+                firstSample_n,
+            )
+        for m in range(4):
+            bias[m] = np.append(bias[m], pointEstimation_n[labels[m]].mean() - tau)
+            stDev[m] = np.append(stDev[m], pointEstimation_n[labels[m]].std())
+            rmse[m] = np.append(
+                rmse[m], sm.tools.eval_measures.rmse(pointEstimation_n[labels[m]])
+            )
+            ciCc[m] = np.append(ciCc[m], ciValues_n[0][1][labels[m]].mean())
+            ciSize[m] = np.append(ciSize[m], ciValues_n[1][1][labels[m]].mean())
+            t1Error[m] = np.append(t1Error[m], testValues_n[0][1][labels[m]].mean())
+            t2Error[m] = np.append(t2Error[m], testValues_n[1][1][labels[m]].mean())
+
+    for metric in bias, stDev, rmse, ciCc, ciSize, t1Error, t2Error:
+        for m in range(4):
+            metric[m] = np.delete(metric[m], 0)
+    nRange = np.delete(nRange, 0)
+
+    return (
+        pointEstimation,
+        testValues,
+        ciValues,
+        firstSample,
+        bias,
+        stDev,
+        rmse,
+        ciCc,
+        ciSize,
+        t1Error,
+        t2Error,
+        nRange,
+    )
 
 
 def simulationShort(
@@ -552,11 +664,11 @@ def powerSimulations(
         taus = np.append(taus, i / 4)
     taus = np.delete(taus, 0)
 
-    rejectionRate1, pointEstimation1, testValues1, ciValues1, firstSample1 = (
+    rejectionRate1, pointEstimation1, testValues1, ciValues1, firstSample1, asymp1 = (
         powerSimulation(taus, specialTau, r, nameSample, n, alpha, beta, cutoff=0)
     )
 
-    rejectionRate2, pointEstimation2, testValues2, ciValues2, firstSample2 = (
+    rejectionRate2, pointEstimation2, testValues2, ciValues2, firstSample2, asymp2 = (
         powerSimulation(
             taus,
             specialTau,
@@ -572,7 +684,7 @@ def powerSimulations(
         )
     )
 
-    rejectionRate3, pointEstimation3, testValues3, ciValues3, firstSample3 = (
+    rejectionRate3, pointEstimation3, testValues3, ciValues3, firstSample3, asymp3 = (
         powerSimulation(
             taus,
             specialTau,
@@ -588,7 +700,7 @@ def powerSimulations(
         )
     )
 
-    rejectionRate4, pointEstimation4, testValues4, ciValues4, firstSample4 = (
+    rejectionRate4, pointEstimation4, testValues4, ciValues4, firstSample4, asymp4 = (
         powerSimulation(
             taus,
             specialTau,
@@ -604,7 +716,7 @@ def powerSimulations(
         )
     )
 
-    rejectionRate5, pointEstimation5, testValues5, ciValues5, firstSample5 = (
+    rejectionRate5, pointEstimation5, testValues5, ciValues5, firstSample5, asymp5 = (
         powerSimulation(
             taus,
             specialTau,
@@ -620,7 +732,7 @@ def powerSimulations(
         )
     )
 
-    rejectionRate6, pointEstimation6, testValues6, ciValues6, firstSample6 = (
+    rejectionRate6, pointEstimation6, testValues6, ciValues6, firstSample6, asymp6 = (
         powerSimulation(
             taus,
             specialTau,
@@ -676,4 +788,16 @@ def powerSimulations(
         ),
         True,
         "images/powerFunctions.png",
+    )
+    plotAsymptoticComparison(
+        (
+            asymp1,
+            asymp2,
+            asymp3,
+            asymp4,
+            asymp5,
+            asymp6,
+        ),
+        True,
+        "images/asymptotic",
     )

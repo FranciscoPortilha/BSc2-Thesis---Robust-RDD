@@ -429,7 +429,7 @@ def analyseSimResults(simResults, tau, printToLatex=False):
         + "$."
     )
     caption2 = (
-        "Skewness, kurtosis and jarque-bera test statistic of the simulated point estimates. "
+        "Skewness, kurtosis and p-value of the jarque-bera statistic of the estimated treatment effects. "
         + "From the simulation with $r = "
         + str(len(point1))
         + "$ , $τ = "
@@ -450,7 +450,7 @@ def analyseSimResults(simResults, tau, printToLatex=False):
         + str(len(point1))
         + "$ , $τ = "
         + str(tau)
-        + "$."
+        + "$. For significance level of $\\alpha=0.05$."
     )
     captions = caption1, caption2, caption3, caption4
     # Plot figures and print latex tables
