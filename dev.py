@@ -44,7 +44,7 @@ import numpy as np
 # simResults = sim.simulations(r, "Basic Linear", n, tau=-1, alpha=0.5, beta=1, cutoff=0)
 # met.analyseSimResults(simResults)
 
-r1, r2, n = 5, 10, 30
+n, r, rAsymptotics = 50, 5, 3
 outlierScenarios = (
     "Simple Outside Right",
     1,
@@ -60,7 +60,7 @@ outlierScenarios = (
 
 np.random.seed(123456)
 sim.powerSimulations(
-    r1,
+    r,
     "Basic Linear",
     n,
     alpha=0.5,
@@ -69,10 +69,11 @@ sim.powerSimulations(
     parametersScenarios=outlierScenarios,
     specialTau=[-0.5,0],
     computeAsymptotics=True,
-    prinToLatex=False
+    rAsymptotics = rAsymptotics,
+    prinToLatex=False,
 )
 ## sim.simulations(
-#    r2,
+#    r,
 ##    "Basic Linear",
 ##    n,
 ##    tau=-0.5,

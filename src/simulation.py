@@ -39,6 +39,7 @@ def powerSimulation(
     outlierMethod="",
     nOutliers=0,
     computeAsymptotics=False,
+    rAsymptotics=0,
 ):
     rejectionRate = [{}, {}, {}, {}]
     labels = ["OLS", "Huber", "Tukey", "Donut"]
@@ -50,7 +51,7 @@ def powerSimulation(
         if taus[t] in specialTau:
             if computeAsymptotics:
                 detailedResults[k] = asymptoticSimulation(
-                    r,
+                    rAsymptotics,
                     nameSample,
                     n,
                     taus[t],
@@ -141,19 +142,21 @@ def asymptoticSimulation(
     for k in range(12):
         n = int(nInit * np.power(1.6, k - 3))
         nRange = np.append(nRange, n)
-        pointEstimation_n, testValues_n, ciValues_n, firstSample_n, notUsed = simulationDetailed(
-            r,
-            nameSample,
-            n,
-            tau,
-            alpha,
-            beta,
-            L,
-            cutoff,
-            b,
-            outlier,
-            outlierMethod,
-            nOutliers,
+        pointEstimation_n, testValues_n, ciValues_n, firstSample_n, notUsed = (
+            simulationDetailed(
+                r,
+                nameSample,
+                n,
+                tau,
+                alpha,
+                beta,
+                L,
+                cutoff,
+                b,
+                outlier,
+                outlierMethod,
+                nOutliers,
+            )
         )
         if k == 3:
             pointEstimation, testValues, ciValues, firstSample = (
@@ -643,6 +646,7 @@ def powerSimulations(
     parametersScenarios="",
     specialTau=0,
     computeAsymptotics=False,
+    rAsymptotics=0,
     prinToLatex=False,
 ):
     (
@@ -672,6 +676,7 @@ def powerSimulations(
         beta,
         cutoff=0,
         computeAsymptotics=computeAsymptotics,
+        rAsymptotics=rAsymptotics,
     )
 
     rejectionRate2, detailedResults2 = powerSimulation(
@@ -687,6 +692,7 @@ def powerSimulations(
         outlierMethod=scenario2_method,
         nOutliers=scenario2_num,
         computeAsymptotics=computeAsymptotics,
+        rAsymptotics=rAsymptotics,
     )
 
     rejectionRate3, detailedResults3 = powerSimulation(
@@ -702,6 +708,7 @@ def powerSimulations(
         outlierMethod=scenario3_method,
         nOutliers=scenario3_num,
         computeAsymptotics=computeAsymptotics,
+        rAsymptotics=rAsymptotics,
     )
 
     rejectionRate4, detailedResults4 = powerSimulation(
@@ -717,6 +724,7 @@ def powerSimulations(
         outlierMethod=scenario4_method,
         nOutliers=scenario4_num,
         computeAsymptotics=computeAsymptotics,
+        rAsymptotics=rAsymptotics,
     )
 
     rejectionRate5, detailedResults5 = powerSimulation(
@@ -732,6 +740,7 @@ def powerSimulations(
         outlierMethod=scenario5_method,
         nOutliers=scenario5_num,
         computeAsymptotics=computeAsymptotics,
+        rAsymptotics=rAsymptotics,
     )
 
     rejectionRate6, detailedResults6 = powerSimulation(
@@ -747,6 +756,7 @@ def powerSimulations(
         outlierMethod=scenario6_method,
         nOutliers=scenario6_num,
         computeAsymptotics=computeAsymptotics,
+        rAsymptotics=rAsymptotics,
     )
 
     for t in range(len(specialTau)):

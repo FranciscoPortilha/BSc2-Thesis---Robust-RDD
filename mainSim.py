@@ -2,7 +2,7 @@ import numpy as np
 from src.simulation import powerSimulations
 
 
-r, n = 5, 30
+n, r, rAsymptotics = 250, 10, 3
 outlierScenarios = (
     "Simple Outside Right",
     1,
@@ -27,5 +27,6 @@ powerSimulations(
     parametersScenarios=outlierScenarios,
     specialTau=[-0.5,0],
     computeAsymptotics=True,
+    rAsymptotics = rAsymptotics,
     prinToLatex=False
 )
