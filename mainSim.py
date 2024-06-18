@@ -2,7 +2,7 @@ import numpy as np
 from src.simulation import powerSimulations
 
 
-n, r, rAsymptotics = 250, 10, 3
+n, r, rAsymptotics = 250, 1, 100
 outlierScenarios = (
     "Simple Outside Right",
     1,
