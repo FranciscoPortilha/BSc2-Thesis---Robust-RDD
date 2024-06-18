@@ -1,9 +1,9 @@
-'''
+"""
 Code for my bachelor thesis in Econometrics and Economics, 
 Outlier Robust Regression Discontinuity Designs.
 
 Author: Francisco Portilha (479126)
-'''
+"""
 
 # Public libraries
 import numpy as np
@@ -37,6 +37,7 @@ def prepExog(sample, intercept=False, jointFit=False):
         exog = sm.add_constant(exog)
 
     return exog
+
 
 def fit(name, sample, intercept, cutoff=0, jointFit=False):
     """
@@ -85,6 +86,7 @@ def fit(name, sample, intercept, cutoff=0, jointFit=False):
     res = res.fit()
     return res
 
+
 def splitFitRD(name, sample, cutoff=0):
     """
     This method estimates the treatment effects based on RDD estimated by 2 regression
@@ -112,6 +114,7 @@ def splitFitRD(name, sample, cutoff=0):
     params_above = fit(name, sample_above, intercept=True).params
     tau = params_above.iloc[0] - params_below.iloc[0]
     return tau
+
 
 def jointFitRD(name, sample, cutoff=0):
     # Create new column with X*T covariate

@@ -55,6 +55,7 @@ def powerSimulation(
                 asympBias,
                 asympStDev,
                 asympRmse,
+                asympEffi,
                 asympCiCc,
                 asympCiSize,
                 asympT1Error,
@@ -111,6 +112,7 @@ def powerSimulation(
             asympBias,
             asympStDev,
             asympRmse,
+            asympEffi,
             asympCiCc,
             asympCiSize,
             asympT1Error,
@@ -136,7 +138,8 @@ def asymptoticSimulation(
 ):
     nRange = {}
     labels = ["OLS", "Huber", "Tukey", "Donut"]
-    bias, stDev, rmse, ciCc, ciSize, t1Error, t2Error = (
+    bias, stDev, rmse, effi, ciCc, ciSize, t1Error, t2Error = (
+        [{}, {}, {}, {}],
         [{}, {}, {}, {}],
         [{}, {}, {}, {}],
         [{}, {}, {}, {}],
@@ -145,8 +148,8 @@ def asymptoticSimulation(
         [{}, {}, {}, {}],
         [{}, {}, {}, {}],
     )
-    for k in range(2):
-        n = nInit * np.power(1.6, k)
+    for k in range(13):
+        n = int(nInit * np.power(1.6, k - 3))
         nRange = np.append(nRange, n)
         pointEstimation_n, testValues_n, ciValues_n, firstSample_n = simulationDetailed(
             r,
@@ -162,7 +165,7 @@ def asymptoticSimulation(
             outlierMethod,
             nOutliers,
         )
-        if k == 0:
+        if k == 3:
             pointEstimation, testValues, ciValues, firstSample = (
                 pointEstimation_n,
                 testValues_n,
@@ -173,14 +176,18 @@ def asymptoticSimulation(
             bias[m] = np.append(bias[m], pointEstimation_n[labels[m]].mean() - tau)
             stDev[m] = np.append(stDev[m], pointEstimation_n[labels[m]].std())
             rmse[m] = np.append(
-                rmse[m], sm.tools.eval_measures.rmse(pointEstimation_n[labels[m]])
+                rmse[m], sm.tools.eval_measures.rmse(pointEstimation_n[labels[m]], tau)
+            )
+            effi[m] = np.append(
+                effi[m],
+                pointEstimation_n["Tukey"].std() / pointEstimation_n[labels[m]].std(),
             )
             ciCc[m] = np.append(ciCc[m], ciValues_n[0][1][labels[m]].mean())
             ciSize[m] = np.append(ciSize[m], ciValues_n[1][1][labels[m]].mean())
             t1Error[m] = np.append(t1Error[m], testValues_n[0][1][labels[m]].mean())
             t2Error[m] = np.append(t2Error[m], testValues_n[1][1][labels[m]].mean())
 
-    for metric in bias, stDev, rmse, ciCc, ciSize, t1Error, t2Error:
+    for metric in bias, stDev, rmse, effi, ciCc, ciSize, t1Error, t2Error:
         for m in range(4):
             metric[m] = np.delete(metric[m], 0)
     nRange = np.delete(nRange, 0)
@@ -193,6 +200,7 @@ def asymptoticSimulation(
         bias,
         stDev,
         rmse,
+        effi,
         ciCc,
         ciSize,
         t1Error,

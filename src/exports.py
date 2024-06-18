@@ -188,23 +188,30 @@ def plotSamplesComparison(
 
 def plotPowerFunctionComparison(taus, rejectionRates, saveFig=False, figPath=""):
     # Initialise figure, labels and colors
-    fig, axs = plt.subplots(2, 3, figsize=[19, 9])
+    fig, axs = plt.subplots(2, 3, figsize=[19, 11])
     labels = ["OLS", "Huber", "Tukey", "Donut"]
     colors = ["darkorange", "royalblue", "mediumseagreen", "mediumorchid"]
 
-    # Vertical and horizontal subplot location 
+    # Vertical and horizontal subplot location
     v, h = 0, 0
+
     # For each scenario
     for scenario in range(6):
         # Plot the power functions
         for model in range(len(labels)):
             axs[v][h].plot(
-                taus, rejectionRates[scenario][model], color=colors[model], label=labels[model], linewidth=0.8
+                taus,
+                rejectionRates[scenario][model],
+                color=colors[model],
+                label=labels[model],
+                linewidth=0.8,
             )
-        axs[v][h].plot(taus, 0.05 + np.zeros_like(taus), color="r", linewidth=0.8)
+        axs[v][h].plot(taus, 0.05 + np.zeros_like(taus), color="r", linewidth=0.6)
+
+        # Add axis labels and title
         axs[v][h].set_ylabel("rejection rate")
         axs[v][h].set_xlabel("$τ$")
-        axs[v][h].set_title("Scenario "+ str(1+scenario))
+        axs[v][h].set_title("Scenario " + str(1 + scenario))
 
         # Increment figure location and add lengend
         if scenario == 0:
@@ -219,37 +226,105 @@ def plotPowerFunctionComparison(taus, rejectionRates, saveFig=False, figPath="")
         fig.savefig(figPath)
     else:
         return fig
-    
+
+
 def plotAsymptoticComparison(asymptotics, saveFig=False, figPath=""):
-    ylabels = "bias", "stDev", "rmse", "ciCc", "ciSize", "t1Error", "t2Error"
+    fileLabels = (
+        "bias",
+        "stDev",
+        "rmse",
+        "efficiency",
+        "ciCc",
+        "ciSize",
+        "t1Error",
+        "t2Error",
+    )
+    plotyLabels = (
+        r"Bias($\^τ$)",
+        r"St.dev($\^τ$)",
+        r"RMSE($\^τ$)",
+        "Efficiency relative to Tukey",
+        "Correct coverage of C.I.",
+        "Length of C.I.",
+        "T.I rejection rate",
+        "T.II rejection rate",
+    )
+
+    # For each metric plot asymptotic functions
     for metric in range(7):
-        fig, axs = plt.subplots(2, 3, figsize=[19, 9])
+        # Initialise figure, labels and colors
+        fig, axs = plt.subplots(2, 3, figsize=[19, 11])
         labels = ["OLS", "Huber", "Tukey", "Donut"]
         colors = ["darkorange", "royalblue", "mediumseagreen", "mediumorchid"]
-        j, l = 0, 0
+
+        # Vertical and horizontal subplot location
+        v, h = 0, 0
+
         # For each scenario
         for scenario in range(6):
-            c = 0
             # Plot the asymptotic function
             for model in range(len(labels)):
-                axs[j][l].plot(
-                    asymptotics[0][7], asymptotics[scenario][metric][model], color=colors[model], label=labels[model], linewidth=0.8
+                if (metric==3) & (model == 2):
+                    0
+                else:    
+                    axs[v][h].plot(
+                        asymptotics[0][8],
+                        asymptotics[scenario][metric][model],
+                        color=colors[model],
+                        label=labels[model],
+                        linewidth=0.8,
+                    )
+            # Plot critical line at 0 for bias and rmse
+            if (metric == 0) | (metric == 2):
+                axs[v][h].plot(
+                    asymptotics[0][8],
+                    np.zeros_like(asymptotics[0][8]),
+                    color="r",
+                    linewidth=0.6,
                 )
-            #axs[j][l].plot(taus, 0.05 + np.zeros_like(taus), color="r", linewidth=0.8)
-            axs[j][l].set_ylabel(ylabels[metric])
-            axs[j][l].set_xlabel("n")
-            axs[j][l].set_title("Scenario "+ str(1+scenario))
+            # Plot critical line at 0.05 for type 1 nd 2 errors
+            elif (metric == 6) | (metric == 7):
+                axs[v][h].plot(
+                    asymptotics[0][8],
+                    0.05 + np.zeros_like(asymptotics[0][8]),
+                    color="r",
+                    linewidth=0.6,
+                )
+            # Plot critical line at 0.95 for correct coverage
+            elif (metric == 4):
+                axs[v][h].plot(
+                    asymptotics[0][8],
+                    0.95 + np.zeros_like(asymptotics[0][8]),
+                    color="r",
+                    linewidth=0.6,
+                )
+            # Plot critical line at 1 for relative efficiency
+            elif (metric == 3):
+                axs[v][h].plot(
+                    asymptotics[0][8],
+                    1 + np.zeros_like(asymptotics[0][8]),
+                    color="r",
+                    linewidth=0.6,
+                )
+
+            # Set axis scale to log and add labels and title
+            axs[v][h].set_xscale("log")
+            if metric in [0,1,2,5]:
+                axs[v][h].set_yscale("log")
+            axs[v][h].set_ylabel(plotyLabels[metric])
+            axs[v][h].set_xlabel("number of observations")
+            axs[v][h].set_title("Scenario " + str(1 + scenario))
 
             # Increment figure location and add lengend
             if scenario == 0:
-                axs[j][l].legend(loc="upper left")
+                axs[v][h].legend(loc="upper left")
             if scenario == 2:
-                j = 1
-                l = -1
-            l = l + 1
+                v = 1
+                h = -1
+            h = h + 1
 
         # Save figure
         if saveFig:
-            fig.savefig(figPath)
+            fig.savefig(figPath + "_" + fileLabels[metric] + ".png")
         else:
             return fig
