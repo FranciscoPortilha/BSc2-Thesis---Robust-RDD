@@ -83,7 +83,7 @@ def plotScenariosHist(scenarios, tau, saveFig=False, figPath=""):
             kde.fit()
             axs[j][l].plot(kde.support, kde.density, lw=3, zorder=10, color=colors[c])
             c = c + 1
-        axs[j][l].axvline(x=tau)
+        axs[j][l].axvline(x=tau, color='r')
         axs[j][l].set_title("Scenario " + str(1 + i))
 
         # Increment figure location and add legend

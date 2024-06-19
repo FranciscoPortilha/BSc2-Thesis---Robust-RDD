@@ -1,8 +1,7 @@
 import numpy as np
-from src.simulation import powerSimulations
+from src.simulation import simulations
 
-
-n, r, rAsymptotics = 250, 1, 100
+n, r = 250, 10
 outlierScenarios = (
     "Simple Outside Right",
     1,
@@ -16,17 +15,16 @@ outlierScenarios = (
     3,
 )
 
-np.random.seed(123456)
-powerSimulations(
-    r,
-    "Basic Linear",
-    n,
-    alpha=0.5,
-    beta=1,
-    cutoff=0,
-    parametersScenarios=outlierScenarios,
-    specialTau=[-0.5,0],
-    computeAsymptotics=True,
-    rAsymptotics = rAsymptotics,
-    prinToLatex=False
-)
+np.random.seed(234567)
+for t in -0.5, 0:
+    simulations(
+        r,
+        "Basic Linear",
+        n,
+        tau=t,
+        alpha=0.5,
+        beta=1,
+        cutoff=0,
+        parametersScenarios=outlierScenarios,
+        printToLatex=False,
+    )

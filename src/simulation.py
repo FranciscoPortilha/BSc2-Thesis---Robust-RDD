@@ -25,9 +25,9 @@ from src.simMetrics import analyseSimResults
 
 
 def powerSimulation(
+    r,
     taus,
     specialTau,
-    r,
     nameSample,
     n,
     alpha,
@@ -39,7 +39,6 @@ def powerSimulation(
     outlierMethod="",
     nOutliers=0,
     computeAsymptotics=False,
-    rAsymptotics=0,
 ):
     rejectionRate = [{}, {}, {}, {}]
     labels = ["OLS", "Huber", "Tukey", "Donut"]
@@ -51,7 +50,7 @@ def powerSimulation(
         if taus[t] in specialTau:
             if computeAsymptotics:
                 detailedResults[k] = asymptoticSimulation(
-                    rAsymptotics,
+                    r,
                     nameSample,
                     n,
                     taus[t],
@@ -502,7 +501,7 @@ def simulationDetailed(
     return pointEstimation, testValues, ciValues, firstSample, {}
 
 
-def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0, parametersScenarios=""):
+def simulations(r, name, n, tau=0, alpha=0, beta=0, cutoff=0, L=[0,0,0,0,0,0], b=1, parametersScenarios=["","","","","","","","","",""], printToLatex=False):
     """
     This method runs various simulations and return the results from all different simulations.
 
@@ -543,65 +542,79 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0, parametersScenarios
         scenario6_num,
     ) = parametersScenarios
     # Run Simulations
-    point1, test1, confInt1, firstSample1 = simulationDetailed(
-        r, name, n, tau, alpha, beta, cutoff=cutoff, outlier=False
+    point1, test1, confInt1, firstSample1, notused = simulationDetailed(
+        r, name, n, tau, alpha, beta, L[0], cutoff=cutoff, b=b, outlier=False
     )
-    point2, test2, confInt2, firstSample2 = simulationDetailed(
+    point2, test2, confInt2, firstSample2, notused = simulationDetailed(
         r,
         name,
         n,
         tau,
         alpha,
         beta,
+        L[1],
         cutoff=cutoff,
+        b=b,
         outlier=True,
         outlierMethod=scenario2_method,
         nOutliers=scenario2_num,
     )
-    point3, test3, confInt3, firstSample3 = simulationDetailed(
+    point3, test3, confInt3, firstSample3, notused = simulationDetailed(
         r,
         name,
         n,
         tau,
         alpha,
         beta,
+        L[2],
         cutoff=cutoff,
+        b=b,
         outlier=True,
         outlierMethod=scenario3_method,
         nOutliers=scenario3_num,
     )
-    point4, test4, confInt4, firstSample4 = simulationDetailed(
+    point4, test4, confInt4, firstSample4, notused = simulationDetailed(
         r,
         name,
         n,
         tau,
         alpha,
         beta,
+        L[3],
         cutoff=cutoff,
+        b=b,
         outlier=True,
         outlierMethod=scenario4_method,
         nOutliers=scenario4_num,
     )
-    point5, test5, confInt5, firstSample5 = simulationDetailed(
+    point5, test5, confInt5, firstSample5, notused= simulationDetailed(
         r,
         name,
         n,
         tau,
         alpha,
         beta,
+        L[4],
         cutoff=cutoff,
+        b=b,
         outlier=True,
         outlierMethod=scenario5_method,
         nOutliers=scenario5_num,
     )
-    point6, test6, confInt6, firstSample6 = simulationDetailed(
+    #if name=="Noack":
+    #    point6, test6, confInt6, firstSample6 = point1, test1, confInt1, firstSample1
+    #
+    #else:
+    point6, test6, confInt6, firstSample6, notused = simulationDetailed(
         r,
         name,
         n,
         tau,
         alpha,
         beta,
+        L[5],
         cutoff=cutoff,
+        b=b,
         outlier=True,
         outlierMethod=scenario6_method,
         nOutliers=scenario6_num,
@@ -633,7 +646,7 @@ def simulations(r, name, n, tau, alpha, beta, cutoff=0, L=0, parametersScenarios
         test6,
     )
 
-    analyseSimResults(simResults, tau, printToLatex=True)
+    analyseSimResults(simResults, tau, printToLatex)
 
 
 def powerSimulations(
@@ -646,7 +659,6 @@ def powerSimulations(
     parametersScenarios="",
     specialTau=0,
     computeAsymptotics=False,
-    rAsymptotics=0,
     prinToLatex=False,
 ):
     (
@@ -667,22 +679,21 @@ def powerSimulations(
     taus = np.delete(taus, 0)
 
     rejectionRate1, detailedResults1 = powerSimulation(
+        r,
         taus,
         specialTau,
-        r,
         nameSample,
         n,
         alpha,
         beta,
         cutoff=0,
         computeAsymptotics=computeAsymptotics,
-        rAsymptotics=rAsymptotics,
     )
 
     rejectionRate2, detailedResults2 = powerSimulation(
+        r,
         taus,
         specialTau,
-        r,
         nameSample,
         n,
         alpha,
@@ -691,14 +702,14 @@ def powerSimulations(
         outlier=True,
         outlierMethod=scenario2_method,
         nOutliers=scenario2_num,
-        computeAsymptotics=computeAsymptotics,
-        rAsymptotics=rAsymptotics,
+        computeAsymptotics=computeAsymptotics, 
+
     )
 
     rejectionRate3, detailedResults3 = powerSimulation(
+        r,
         taus,
         specialTau,
-        r,
         nameSample,
         n,
         alpha,
@@ -708,13 +719,12 @@ def powerSimulations(
         outlierMethod=scenario3_method,
         nOutliers=scenario3_num,
         computeAsymptotics=computeAsymptotics,
-        rAsymptotics=rAsymptotics,
     )
 
     rejectionRate4, detailedResults4 = powerSimulation(
+        r,
         taus,
         specialTau,
-        r,
         nameSample,
         n,
         alpha,
@@ -724,13 +734,12 @@ def powerSimulations(
         outlierMethod=scenario4_method,
         nOutliers=scenario4_num,
         computeAsymptotics=computeAsymptotics,
-        rAsymptotics=rAsymptotics,
     )
 
     rejectionRate5, detailedResults5 = powerSimulation(
+        r,
         taus,
         specialTau,
-        r,
         nameSample,
         n,
         alpha,
@@ -740,13 +749,12 @@ def powerSimulations(
         outlierMethod=scenario5_method,
         nOutliers=scenario5_num,
         computeAsymptotics=computeAsymptotics,
-        rAsymptotics=rAsymptotics,
     )
 
     rejectionRate6, detailedResults6 = powerSimulation(
+        r,
         taus,
         specialTau,
-        r,
         nameSample,
         n,
         alpha,
@@ -756,7 +764,6 @@ def powerSimulations(
         outlierMethod=scenario6_method,
         nOutliers=scenario6_num,
         computeAsymptotics=computeAsymptotics,
-        rAsymptotics=rAsymptotics,
     )
 
     for t in range(len(specialTau)):
