@@ -83,7 +83,7 @@ def plotScenariosHist(scenarios, tau, saveFig=False, figPath=""):
             kde.fit()
             axs[j][l].plot(kde.support, kde.density, lw=3, zorder=10, color=colors[c])
             c = c + 1
-        axs[j][l].axvline(x=tau, color='r')
+        axs[j][l].axvline(x=tau, color="r")
         axs[j][l].set_title("Scenario " + str(1 + i))
 
         # Increment figure location and add legend
@@ -103,7 +103,7 @@ def plotScenariosHist(scenarios, tau, saveFig=False, figPath=""):
 
 
 def plotSamplesComparison(
-    samples, saveFig=False, figPath="", printRegLines=False, cutoff=0
+    samples, saveFig=False, figPath="", printRegLines=False, cutoff=0, b=1
 ):
     """
     This method plots a figure with the regession lines of the different estimation methods,
@@ -130,7 +130,7 @@ def plotSamplesComparison(
     for i in range(6):
         # Plot scatter observations
         axs[j][l].scatter(
-            samples[i].X, samples[i].Y, s=6, c=samples[i].Outlier, cmap=cmap
+            samples[i].X, samples[i].Y, s=4, c=samples[i].Outlier, cmap=cmap
         )
         axs[j][l].set_xlabel("$X_i$")
         axs[j][l].set_ylabel("$Y_i$")
@@ -143,7 +143,8 @@ def plotSamplesComparison(
             # For each estimation method
             for model in models:
                 # Fit model
-                res = jointFitRD(model, samples[i], cutoff)
+                res = jointFitRD(model, samples[i], cutoff, b)
+                #print(res.summary())
                 params = res.params
 
                 # Plot regression below cutoff
@@ -268,9 +269,9 @@ def plotAsymptoticComparison(tau, asymptotics, saveFig=False, figPath=""):
         for scenario in range(6):
             # Plot the asymptotic function
             for model in range(len(labels)):
-                if (metric==3) & (model == 2):
+                if (metric == 3) & (model == 2):
                     0
-                elif metric==0:
+                elif metric == 0:
                     axs[v][h].plot(
                         asymptotics[0][8],
                         np.abs(asymptotics[scenario][metric][model]),
@@ -278,7 +279,7 @@ def plotAsymptoticComparison(tau, asymptotics, saveFig=False, figPath=""):
                         label=labels[model],
                         linewidth=0.8,
                     )
-                else:    
+                else:
                     axs[v][h].plot(
                         asymptotics[0][8],
                         asymptotics[scenario][metric][model],
@@ -303,7 +304,7 @@ def plotAsymptoticComparison(tau, asymptotics, saveFig=False, figPath=""):
                     linewidth=0.6,
                 )
             # Plot critical line at 0.95 for correct coverage
-            elif (metric == 4):
+            elif metric == 4:
                 axs[v][h].plot(
                     asymptotics[0][8],
                     0.95 + np.zeros_like(asymptotics[0][8]),
@@ -311,7 +312,7 @@ def plotAsymptoticComparison(tau, asymptotics, saveFig=False, figPath=""):
                     linewidth=0.6,
                 )
             # Plot critical line at 1 for relative efficiency
-            elif (metric == 3):
+            elif metric == 3:
                 axs[v][h].plot(
                     asymptotics[0][8],
                     1 + np.zeros_like(asymptotics[0][8]),
@@ -321,7 +322,7 @@ def plotAsymptoticComparison(tau, asymptotics, saveFig=False, figPath=""):
 
             # Set axis scale to log and add labels and title
             axs[v][h].set_xscale("log")
-            if metric in [0,1,2,5]:
+            if metric in [0, 1, 2, 5]:
                 axs[v][h].set_yscale("log")
             axs[v][h].set_ylabel(plotyLabels[metric])
             axs[v][h].set_xlabel("number of observations")
@@ -337,7 +338,7 @@ def plotAsymptoticComparison(tau, asymptotics, saveFig=False, figPath=""):
 
         # Save figure
         if saveFig:
-            fig.savefig(figPath + "_" + fileLabels[metric] + "_" + str(tau) +".png")
+            fig.savefig(figPath + "_" + fileLabels[metric] + "_" + str(tau) + ".png")
             plt.close()
         else:
             return fig

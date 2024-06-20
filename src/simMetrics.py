@@ -72,7 +72,7 @@ def percentV(values):
     )
 
 
-def analyseSimResults(simResults, tau, printToLatex=False):
+def analyseSimResults(simResults, tau, b=1, printToLatex=False, figureFolder=""):
     """
     This method analyses the results from the simulation, saves the various figures,
     prints the latex tables.
@@ -464,7 +464,8 @@ def analyseSimResults(simResults, tau, printToLatex=False):
             firstSample6,
         ],
         True,
-        "images/sampleComparison_tau_" + str(tau) + ".png",
+        "images/" + figureFolder + "/sampleComparison_tau_" + str(tau) + ".png",
+        b=b,
     )
     plotSamplesComparison(
         [
@@ -476,14 +477,15 @@ def analyseSimResults(simResults, tau, printToLatex=False):
             firstSample6,
         ],
         True,
-        "images/regressionComparison_tau_" + str(tau) + ".png",
+        "images/" + figureFolder + "/regressionComparison_tau_" + str(tau) + ".png",
         True,
+        b=b,
     )
     plotScenariosHist(
         [point1, point2, point3, point4, point5, point6],
         tau,
         True,
-        "images/scenariosHist_tau_" + str(tau) + ".png",
+        "images/" + figureFolder + "/scenariosHist_tau_" + str(tau) + ".png",
     )
     print("")
     print(
