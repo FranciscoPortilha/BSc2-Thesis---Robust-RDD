@@ -10,7 +10,7 @@ import numpy as np
 import statsmodels.api as sm
 
 
-def prepExog(sample, intercept=False, jointFit=False):
+def prepExog(sample, intercept=False, jointFit=False, outliers=True):
     """
     This method add prepares a sample to be used as exogenous variables in regression.
 
@@ -31,7 +31,8 @@ def prepExog(sample, intercept=False, jointFit=False):
     exog = exog.drop("Y", axis="columns")
     if jointFit is False:
         exog = exog.drop("Treatment", axis="columns")
-    exog = exog.drop("Outlier", axis="columns")
+    if outliers:  
+        exog = exog.drop("Outlier", axis="columns")
     # Add an intercept if requested
     if intercept == True:
         exog = sm.add_constant(exog)
@@ -39,7 +40,7 @@ def prepExog(sample, intercept=False, jointFit=False):
     return exog
 
 
-def fit(name, sample, intercept, cutoff=0, jointFit=False):
+def fit(name, sample, intercept, cutoff=0, jointFit=False, outliers=True, donut=0.1):
     """
     This method will fit a regression based on the different estimation methods
     for the given sample.
@@ -64,20 +65,20 @@ def fit(name, sample, intercept, cutoff=0, jointFit=False):
 
     # Estimate regression based on estimation method
     if name == "Robust Huber":
-        exog = prepExog(sample, intercept, jointFit)
+        exog = prepExog(sample, intercept, jointFit, outliers)
         res = sm.RLM(sample.Y, exog, M=sm.robust.norms.HuberT())
 
     elif name == "Robust Tukey":
-        exog = prepExog(sample, intercept, jointFit)
+        exog = prepExog(sample, intercept, jointFit, outliers)
         res = sm.RLM(sample.Y, exog, M=sm.robust.norms.TukeyBiweight())
 
     elif name == "OLS":
-        exog = prepExog(sample, intercept, jointFit)
+        exog = prepExog(sample, intercept, jointFit, outliers)
         res = sm.OLS(sample.Y, exog)
 
     elif name == "Donut":
-        sample = sample.loc[np.abs(sample.X - cutoff) >= 0.1]
-        exog = prepExog(sample, intercept, jointFit)
+        sample = sample.loc[np.abs(sample.X - cutoff) >= donut]
+        exog = prepExog(sample, intercept, jointFit, outliers)
         res = sm.OLS(sample.Y, exog)
 
     else:
@@ -116,9 +117,12 @@ def splitFitRD(name, sample, cutoff=0):
     return tau
 
 
-def jointFitRD(name, sample, cutoff=0):
+def jointFitRD(name, sample, cutoff=0, b=1,outliers=True,donut=0.1):
     # Create new column with X*T covariate
     sample["XT"] = sample.X * sample.Treatment
 
+    # Select part of the sample to be used according to bandwidth
+    sample = sample.loc[np.abs(sample.X - cutoff) <= b]
+
     # fit model and return result
-    return fit(name, sample, True, cutoff, True)
+    return fit(name, sample, True, cutoff, True, outliers, donut)

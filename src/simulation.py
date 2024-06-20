@@ -324,9 +324,6 @@ def simulationDetailed(
             False,
         )
 
-        # Select part of the sample to be used according to bandwidth
-        sample = sample.loc[np.abs(sample.X - cutoff) <= b]
-
         # Store first sample for comparison
         if k == 0:
             firstSample = sample
@@ -334,7 +331,7 @@ def simulationDetailed(
         # Estimate the different models and record results
         for m in range(len(models)):
             # Fit the model
-            res = jointFitRD(models[m], sample, cutoff)
+            res = jointFitRD(models[m], sample, cutoff, b)
 
             # Record point estimates
             point[m] = np.append(point[m], res.params.iloc[2])
@@ -501,7 +498,20 @@ def simulationDetailed(
     return pointEstimation, testValues, ciValues, firstSample, {}
 
 
-def simulations(r, name, n, tau=0, alpha=0, beta=0, cutoff=0, L=[0,0,0,0,0,0], b=1, parametersScenarios=["","","","","","","","","",""], printToLatex=False):
+def simulations(
+    r,
+    name,
+    n,
+    tau=0,
+    alpha=0,
+    beta=0,
+    cutoff=0,
+    L=[0, 0, 0, 0, 0, 0],
+    b=1,
+    parametersScenarios=["", "", "", "", "", "", "", "", "", ""],
+    printToLatex=False,
+    figureFolder="",
+):
     """
     This method runs various simulations and return the results from all different simulations.
 
@@ -587,7 +597,7 @@ def simulations(r, name, n, tau=0, alpha=0, beta=0, cutoff=0, L=[0,0,0,0,0,0], b
         outlierMethod=scenario4_method,
         nOutliers=scenario4_num,
     )
-    point5, test5, confInt5, firstSample5, notused= simulationDetailed(
+    point5, test5, confInt5, firstSample5, notused = simulationDetailed(
         r,
         name,
         n,
@@ -601,10 +611,10 @@ def simulations(r, name, n, tau=0, alpha=0, beta=0, cutoff=0, L=[0,0,0,0,0,0], b
         outlierMethod=scenario5_method,
         nOutliers=scenario5_num,
     )
-    #if name=="Noack":
+    # if name=="Noack":
     #    point6, test6, confInt6, firstSample6 = point1, test1, confInt1, firstSample1
     #
-    #else:
+    # else:
     point6, test6, confInt6, firstSample6, notused = simulationDetailed(
         r,
         name,
@@ -646,7 +656,7 @@ def simulations(r, name, n, tau=0, alpha=0, beta=0, cutoff=0, L=[0,0,0,0,0,0], b
         test6,
     )
 
-    analyseSimResults(simResults, tau, printToLatex)
+    analyseSimResults(simResults, tau, b, printToLatex, figureFolder)
 
 
 def powerSimulations(
@@ -702,8 +712,7 @@ def powerSimulations(
         outlier=True,
         outlierMethod=scenario2_method,
         nOutliers=scenario2_num,
-        computeAsymptotics=computeAsymptotics, 
-
+        computeAsymptotics=computeAsymptotics,
     )
 
     rejectionRate3, detailedResults3 = powerSimulation(
@@ -812,7 +821,7 @@ def powerSimulations(
             testValues6,
         )
 
-        analyseSimResults(simResults, specialTau[t], prinToLatex)
+        analyseSimResults(simResults, specialTau[t], 1, prinToLatex, "advanced")
         if computeAsymptotics:
             plotAsymptoticComparison(
                 specialTau[t],
@@ -825,7 +834,7 @@ def powerSimulations(
                     asymp6,
                 ),
                 True,
-                "images/asymptotic",
+                "images/advanced/asymptotic",
             )
 
     plotPowerFunctionComparison(
@@ -839,5 +848,5 @@ def powerSimulations(
             rejectionRate6,
         ),
         True,
-        "images/powerFunctions.png",
+        "images/advanced/powerFunctions.png",
     )
