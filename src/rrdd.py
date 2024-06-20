@@ -116,9 +116,12 @@ def splitFitRD(name, sample, cutoff=0):
     return tau
 
 
-def jointFitRD(name, sample, cutoff=0):
+def jointFitRD(name, sample, cutoff=0, b=1):
     # Create new column with X*T covariate
     sample["XT"] = sample.X * sample.Treatment
+
+    # Select part of the sample to be used according to bandwidth
+    sample = sample.loc[np.abs(sample.X - cutoff) <= b]
 
     # fit model and return result
     return fit(name, sample, True, cutoff, True)

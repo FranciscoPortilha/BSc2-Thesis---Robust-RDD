@@ -27,4 +27,5 @@ for t in -0.5, 0:
         cutoff=0,
         parametersScenarios=outlierScenarios,
         printToLatex=False,
+        figureFolder="base",
     )

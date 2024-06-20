@@ -6,11 +6,19 @@ import src.exports as exp
 import statsmodels.api as sm
 import pandas as pd
 import numpy as np
+import rdrobust
 
 ### Test sample
-# sample = smp.genSample('Basic Linear',250,tau=-1,alpha=0.5,beta=1,L=200,outlier=False,outlierMethod='Simple Outside', nOutliers=5,printPlot=False)
-# res = rrdd.jointFitRD('Robust Huber',sample)
-# print(res.summary())
+sample = smp.genSample('Basic Linear',1000,tau=-1,alpha=0.5,beta=1,L=0,outlier=False,outlierMethod='Simple Outside', nOutliers=5,printPlot=False)
+res = rdrobust.rdrobust(sample.Y, sample.X,0)
+res_2 = rrdd.jointFitRD('OLS',sample,b=res.bws.left.iloc[0])
+print(res)
+print(res.bws)
+print(res.bws.left.iloc[0])
+print(res.coef)
+print(res_2.summary())
+print(res_2.params)
+
 # res = rrdd.jointFitRD('OLS',sample)
 # print(res.summary())
 # print(res.t_test(([0, 0, 1, 0], 0)))
@@ -43,58 +51,3 @@ import numpy as np
 #
 # simResults = sim.simulations(r, "Basic Linear", n, tau=-1, alpha=0.5, beta=1, cutoff=0)
 # met.analyseSimResults(simResults)
-
-n, r, rAsymptotics = 50, 5, 3
-outlierScenarios = (
-    "Simple Outside Right",
-    1,
-    "Simple Oposite",
-    3,
-    "Simple Outside Left",
-    2,
-    "Simple Outside Right",
-    3,
-    "Simple Oposite Inside",
-    3,
-)
-
-np.random.seed(123456)
-sim.powerSimulations(
-    r,
-    "Basic Linear",
-    n,
-    alpha=0.5,
-    beta=1,
-    cutoff=0,
-    parametersScenarios=outlierScenarios,
-    specialTau=[-0.5,0],
-    computeAsymptotics=True,
-    rAsymptotics = rAsymptotics,
-    prinToLatex=False,
-)
-## sim.simulations(
-#    r,
-##    "Basic Linear",
-##    n,
-##    tau=-0.5,
-##    alpha=0.5,
-##    beta=1,
-##    cutoff=0,
-#    parametersScenarios=outlierScenarios,
-# )
-# sim.simulations(
-#    r2,
-#    "Basic Linear",
-#    n,
-#    tau=0,
-#    alpha=0.5,
-#    beta=1,
-#    cutoff=0,
-#    parametersScenarios=outlierScenarios,
-# )
-
-# point6, test6, confInt6, firstSample6 = simulation(
-#        r, name, n, tau=0, L=40, cutoff=cutoff, b=0.5, outlier=False
-#    )
-
-
