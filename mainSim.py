@@ -1,7 +1,7 @@
 import numpy as np
 from src.simulation import simulations
 
-n, r = 250, 10
+n, r = 250, 100
 outlierScenarios = (
     "Simple Outside Right",
     1,
@@ -16,7 +16,7 @@ outlierScenarios = (
 )
 
 np.random.seed(234567)
-for t in -0.5, 0:
+for t in [-0.5]:
     simulations(
         r,
         "Basic Linear",

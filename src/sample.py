@@ -32,7 +32,7 @@ def sign(x):
         return 1
 
 
-def treatment(x,cutoff=0):
+def treatment(x,cutoff=0,positive=True):
     """
     This function computes if an observation has received treatment.
 
@@ -46,10 +46,16 @@ def treatment(x,cutoff=0):
     treatment: int
         Returns 0 if observation x does not receive treatment and 1 if it does receive treatment.
     """
-    if x < cutoff:
-        return 0
+    if positive:
+        if x < cutoff:
+            return 0
+        else:
+            return 1
     else:
-        return 1
+        if x > cutoff:
+            return 0
+        else:
+            return 1
 
 
 def indicator(x):
@@ -72,7 +78,7 @@ def indicator(x):
         return 0
 
 
-def genT(X, cutoff=0):
+def genT(X, cutoff=0, positive=True):
     """
     This function creates an array of treatment variables for a sample of observations.
 
@@ -88,7 +94,7 @@ def genT(X, cutoff=0):
     """
     T = {}
     for i in range(len(X)):
-        T = np.append(T, treatment(X[i],cutoff))
+        T = np.append(T, treatment(X[i],cutoff,positive))
     T = np.delete(T, 0)
     return T
 
