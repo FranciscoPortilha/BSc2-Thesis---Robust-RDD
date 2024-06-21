@@ -448,7 +448,7 @@ def analyseSimResults(simResults, tau, b=1, printToLatex=False, figureFolder="")
         "Type I and type II errors of t-test for $h_0:\\hat{\\tau}=\\tau$ and $h_0:\\hat{\\tau}=0$ repectively, "
         + "from the estimated treatment effects. From the simulation with $r = "
         + str(len(point1))
-        + "$ , $\tau = "
+        + "$ , $\\tau = "
         + str(tau)
         + "$. For significance level of $\\alpha=0.05$."
     )
