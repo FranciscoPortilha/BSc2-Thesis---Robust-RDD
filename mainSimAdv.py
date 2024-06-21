@@ -4,16 +4,16 @@ from src.simulation import powerSimulations
 
 n, r = 250, 10
 outlierScenarios = (
-    "Simple Outside Right",
-    1,
-    "Simple Oposite",
-    3,
-    "Simple Outside Left",
+    "Small Outside Right",
     2,
-    "Simple Outside Right",
+    "Outside Right",
     3,
-    "Simple Oposite Inside",
+    "Oposite Outside",
     3,
+    "Oposite Inside",
+    3,
+    "Symetric Inside",
+    2,
 )
 
 np.random.seed(123456)

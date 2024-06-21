@@ -1,18 +1,18 @@
 import numpy as np
 from src.simulation import simulations
 
-n, r = 250, 100
+n, r = 250, 1000
 outlierScenarios = (
-    "Simple Outside Right",
-    1,
-    "Simple Oposite",
-    3,
-    "Simple Outside Left",
+    "Small Outside Right",
     2,
-    "Simple Outside Right",
+    "Outside Right",
     3,
-    "Simple Oposite Inside",
+    "Oposite Outside",
     3,
+    "Oposite Inside",
+    3,
+    "Symetric Inside",
+    2,
 )
 
 np.random.seed(234567)
@@ -22,7 +22,7 @@ for t in [-0.5]:
         "Basic Linear",
         n,
         tau=t,
-        alpha=0.5,
+        alpha=0,
         beta=1,
         cutoff=0,
         parametersScenarios=outlierScenarios,

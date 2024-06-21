@@ -274,14 +274,14 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1, cutoff=0):
                 i = i + 1
 
     # Simple Outised generates outlier(s) just outside the left side of the donut stripe
-    if name == "Simple Outside Left":
+    if name == "Small Outside Right":
         i = 0
         for j in range(nOutliers):
             notFound = True
             # Find first observation just outside the stripe and change outcome value to 2.5
             while notFound & (i < len(X)):
-                if (X[i] >= -2 * delta) & (X[i] < -delta):
-                    Y[i] = -2.5
+                if (X[i] <= 2 * delta) & (X[i] > delta):
+                    Y[i] = 3.5
                     Outliers[i] = 1
                     notFound = False
                     i = i + 1
@@ -289,7 +289,7 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1, cutoff=0):
                     i = i + 1
 
     # Simple Outised generates outlier(s) just outside the right side of the donut stripe
-    if name == "Simple Outside Right":
+    if name == "Outside Right":
         i = 0
         for j in range(nOutliers):
             notFound = True
@@ -304,7 +304,7 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1, cutoff=0):
                     i = i + 1
 
     # Simple Oposite generates outlier(s) on both sides of the cutoff just outside the donut stripe.
-    if name == "Simple Oposite":
+    if name == "Oposite Outside":
         i = 0
         j = 0
         for k in range(nOutliers):
@@ -332,7 +332,7 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1, cutoff=0):
                 else:
                     j = j + 1
         # Simple Oposite generates outlier(s) on both sides of the cutoff just outside the donut stripe.
-    if name == "Simple Oposite Inside":
+    if name == "Oposite Inside":
         i = 0
         j = 0
         for k in range(nOutliers):
@@ -354,6 +354,57 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1, cutoff=0):
             while notFound & (j < len(X)):
                 if (X[j] >= cutoff) & (X[j] < delta):
                     Y[j] = 10
+                    Outliers[j] = 1
+                    notFound = False
+                    j = j + 1
+                else:
+                    j = j + 1
+   
+    if name == "Symetric Inside":
+        i = 0
+        j = 0
+        for k in range(nOutliers):
+            notFound = True
+            # Find first observation just inside the left-side of the stripe and
+            # change outcome value to -10
+            while notFound & (i < len(X)):
+                if (X[i] <= cutoff) & (X[i] > -delta):
+                    Y[i] = -10
+                    Outliers[i] = 1
+                    notFound = False
+                    i = i + 1
+                else:
+                    i = i + 1
+
+            notFound = True
+            # Find first observation just inside the right-side of the stripe and
+            # change outcome value to 10
+            while notFound & (j < len(X)):
+                if (X[j] >= cutoff) & (X[j] < delta):
+                    Y[j] = 10
+                    Outliers[j] = 1
+                    notFound = False
+                    j = j + 1
+                else:
+                    j = j + 1
+            notFound = True
+            # Find first observation just inside the left-side of the stripe and
+            # change outcome value to -10
+            while notFound & (i < len(X)):
+                if (X[i] <= cutoff) & (X[i] > -delta):
+                    Y[i] = 10
+                    Outliers[i] = 1
+                    notFound = False
+                    i = i + 1
+                else:
+                    i = i + 1
+
+            notFound = True
+            # Find first observation just inside the right-side of the stripe and
+            # change outcome value to 10
+            while notFound & (j < len(X)):
+                if (X[j] >= cutoff) & (X[j] < delta):
+                    Y[j] = -10
                     Outliers[j] = 1
                     notFound = False
                     j = j + 1
