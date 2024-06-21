@@ -6,16 +6,16 @@ outlierScenarios = (
     "Small Outside Right",
     2,
     "Outside Right",
-    3,
-    "Oposite Outside",
-    3,
-    "Oposite Inside",
-    3,
-    "Symetric Inside",
     2,
+    "Oposite Outside",
+    2,
+    "Oposite Inside",
+    2,
+    "Symetric Inside",
+    1,
 )
 
-np.random.seed(234567)
+np.random.seed(123456)
 for t in [-0.5,0]:
     simulations(
         r,
