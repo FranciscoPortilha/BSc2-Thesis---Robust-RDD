@@ -15,7 +15,7 @@ outlierScenarios = (
     1,
 )
 
-np.random.seed(123456)
+np.random.seed(1234)
 for t in [-0.5,0]:
     simulations(
         r,
