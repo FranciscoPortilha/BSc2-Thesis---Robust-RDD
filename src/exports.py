@@ -252,7 +252,7 @@ def plotAsymptoticComparison(tau, asymptotics, saveFig=False, figPath=""):
         "Correct coverage of C.I.",
         "Length of C.I.",
         "T.I rejection rate",
-        "T.II rejection rate",
+        "T.II acceptance rate",
     )
 
     # For each metric plot asymptotic functions

@@ -1,7 +1,7 @@
 import numpy as np
 from src.simulation import simulations
 
-n, r = 250, 1000
+n, r = 250, 10000
 outlierScenarios = (
     "Small Outside Right",
     2,
@@ -16,7 +16,7 @@ outlierScenarios = (
 )
 
 np.random.seed(234567)
-for t in [-0.5]:
+for t in [-0.5,0]:
     simulations(
         r,
         "Basic Linear",
@@ -26,6 +26,6 @@ for t in [-0.5]:
         beta=1,
         cutoff=0,
         parametersScenarios=outlierScenarios,
-        printToLatex=False,
+        printToLatex=True,
         figureFolder="base",
     )

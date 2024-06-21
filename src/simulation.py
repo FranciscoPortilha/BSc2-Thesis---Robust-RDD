@@ -80,7 +80,7 @@ def powerSimulation(
                 )
             for m in range(4):
                 rejectionRate[m] = np.append(
-                    rejectionRate[m], detailedResults[k][1][1][1][labels[m]].mean()
+                    rejectionRate[m], 1-detailedResults[k][1][1][1][labels[m]].mean()
                 )
             k = k + 1
 
@@ -408,27 +408,27 @@ def simulationDetailed(
             # Calculate if t test statistic of Ho: t == 0
             p_t2 = res.pvalues.iloc[2]
 
-            # Record if t test of Ho: t == 0 is rejected
+            # Record if t test of Ho: t == 0 is accepted
             if p_t2 >= 0.1:
                 # No incorrect rejections
-                t_type2error[0][m] = np.append(t_type2error[0][m], 0)
-                t_type2error[1][m] = np.append(t_type2error[1][m], 0)
-                t_type2error[2][m] = np.append(t_type2error[2][m], 0)
-            elif p_t2 >= 0.05:
-                # Incorrect rejection at 0.1 level
-                t_type2error[0][m] = np.append(t_type2error[0][m], 1)
-                t_type2error[1][m] = np.append(t_type2error[1][m], 0)
-                t_type2error[2][m] = np.append(t_type2error[2][m], 0)
-            elif p_t2 >= 0.01:
-                # Incorrect rejection at 0.1 and 0.05 levels
-                t_type2error[0][m] = np.append(t_type2error[0][m], 1)
-                t_type2error[1][m] = np.append(t_type2error[1][m], 1)
-                t_type2error[2][m] = np.append(t_type2error[2][m], 0)
-            else:
-                # Incorrect rejection at all levels
                 t_type2error[0][m] = np.append(t_type2error[0][m], 1)
                 t_type2error[1][m] = np.append(t_type2error[1][m], 1)
                 t_type2error[2][m] = np.append(t_type2error[2][m], 1)
+            elif p_t2 >= 0.05:
+                # Incorrect rejection at 0.1 level
+                t_type2error[0][m] = np.append(t_type2error[0][m], 0)
+                t_type2error[1][m] = np.append(t_type2error[1][m], 1)
+                t_type2error[2][m] = np.append(t_type2error[2][m], 1)
+            elif p_t2 >= 0.01:
+                # Incorrect rejection at 0.1 and 0.05 levels
+                t_type2error[0][m] = np.append(t_type2error[0][m], 0)
+                t_type2error[1][m] = np.append(t_type2error[1][m], 0)
+                t_type2error[2][m] = np.append(t_type2error[2][m], 1)
+            else:
+                # Incorrect rejection at all levels
+                t_type2error[0][m] = np.append(t_type2error[0][m], 0)
+                t_type2error[1][m] = np.append(t_type2error[1][m], 0)
+                t_type2error[2][m] = np.append(t_type2error[2][m], 0)
 
     # Adjust the format of the arrays (delete empty first cell)
     for m in range(len(models)):
