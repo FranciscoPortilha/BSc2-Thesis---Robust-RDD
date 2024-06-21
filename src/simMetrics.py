@@ -424,7 +424,7 @@ def analyseSimResults(simResults, tau, b=1, printToLatex=False, figureFolder="")
         "Bias, standard deviation and root mean squared error of the point estimates "
         + "of the treatment effect. From the simulation with $r = "
         + str(len(point1))
-        + "$ , $τ = "
+        + "$ , $\\tau = "
         + str(tau)
         + "$."
     )
@@ -432,7 +432,7 @@ def analyseSimResults(simResults, tau, b=1, printToLatex=False, figureFolder="")
         "Skewness, kurtosis and p-value of the jarque-bera statistic of the estimated treatment effects. "
         + "From the simulation with $r = "
         + str(len(point1))
-        + "$ , $τ = "
+        + "$ , $\\tau = "
         + str(tau)
         + "$."
     )
@@ -440,7 +440,7 @@ def analyseSimResults(simResults, tau, b=1, printToLatex=False, figureFolder="")
         "Correct coverage of the confidence intervals for $\\tau$ and their length. For significance level of $\\alpha=0.05$. "
         + "From the simulation with $r = "
         + str(len(point1))
-        + "$ , $τ = "
+        + "$ , $\\tau = "
         + str(tau)
         + "$."
     )
@@ -448,7 +448,7 @@ def analyseSimResults(simResults, tau, b=1, printToLatex=False, figureFolder="")
         "Type I and type II errors of t-test for $h_0:\\hat{\\tau}=\\tau$ and $h_0:\\hat{\\tau}=0$ repectively, "
         + "from the estimated treatment effects. From the simulation with $r = "
         + str(len(point1))
-        + "$ , $τ = "
+        + "$ , $\tau = "
         + str(tau)
         + "$. For significance level of $\\alpha=0.05$."
     )
