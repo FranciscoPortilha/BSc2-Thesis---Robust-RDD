@@ -165,7 +165,7 @@ def plotSamplesComparison(
                     + r" ($\^τ$: "
                     + str(round(params.iloc[2], 2))
                     + "("
-                    + str(round(res.pvalues.iloc[2], 2))
+                    + "{:.2f}".format(round(res.pvalues.iloc[2], 2))
                     + "))",
                 )
                 # Increment model label counter
@@ -211,7 +211,8 @@ def plotPowerFunctionComparison(taus, rejectionRates, saveFig=False, figPath="")
                 linewidth=0.8,
             )
         axs[v][h].plot(taus, 0.05 + np.zeros_like(taus), color="r", linewidth=0.6)
-
+        axs[v][h].set_xlim([-2.25,2.25])
+        axs[v][h].set_ylim([-0.05,1.05])
         # Add axis labels and title
         axs[v][h].set_ylabel("rejection rate")
         axs[v][h].set_xlabel("$τ$")
@@ -245,7 +246,7 @@ def plotAsymptoticComparison(tau, asymptotics, saveFig=False, figPath=""):
         "t2Error",
     )
     plotyLabels = (
-        r"|Bias($\^τ$)|",
+        r"Absoulute bias($\^τ$)",
         r"St.dev($\^τ$)",
         r"RMSE($\^τ$)",
         "Efficiency relative to Tukey",
@@ -325,7 +326,7 @@ def plotAsymptoticComparison(tau, asymptotics, saveFig=False, figPath=""):
             if metric in [0, 1, 2, 5]:
                 axs[v][h].set_yscale("log")
             axs[v][h].set_ylabel(plotyLabels[metric])
-            axs[v][h].set_xlabel("number of observations")
+            axs[v][h].set_xlabel("Number of observations")
             axs[v][h].set_title("Scenario " + str(1 + scenario))
 
             # Increment figure location and add lengend
