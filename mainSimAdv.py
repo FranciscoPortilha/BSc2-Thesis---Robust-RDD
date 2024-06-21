@@ -2,7 +2,7 @@ import numpy as np
 from src.simulation import powerSimulations
 
 
-n, r = 250, 10
+n, r = 250, 1000
 outlierScenarios = (
     "Small Outside Right",
     2,
