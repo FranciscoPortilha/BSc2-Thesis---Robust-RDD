@@ -10,11 +10,9 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import statsmodels.api as sm
-import statsmodels.stats.stattools as st
 
 # My methods. Developed for my thesis.
 from src.rrdd import jointFitRD
-from src.sample import genT
 
 
 def toLatexTable(results1, results2="", caption="", ref=""):
