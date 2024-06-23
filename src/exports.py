@@ -343,7 +343,7 @@ def plotAsymptoticComparison(tau, asymptotics, saveFig=False, figPath=""):
             return fig
 
 
-def plotApplicationFigure(sample, cutoff=1500, b=85, d=3.1):
+def plotApplicationFigure(sample, cutoff=0, b=85, d=3.1):
     models = ["OLS", "Robust Huber", "Robust Tukey", "Donut"]
     labels = ["OLS", "Huber", "Tukey", "Donut"]
     colors = ["darkorange", "royalblue", "mediumseagreen", "mediumorchid"]
@@ -351,33 +351,34 @@ def plotApplicationFigure(sample, cutoff=1500, b=85, d=3.1):
     ax = fig.subplots()
     ax.scatter(sample.X, sample.Y, s=5)
     ax.plot()
-
     x_below = np.linspace(min(sample.X), cutoff, 100)
     x_above = np.linspace(cutoff, max(sample.X), 100)
+    sample.X = sample.X - cutoff
     c = 0
     for model in models:
-        res = jointFitRD(model, sample, cutoff=cutoff, b=85, outliers=False, donut=d)
+        # sample.X = sample.X-cutoff
+        res = jointFitRD(model, sample, cutoff=0, b=85, outliers=False, donut=d)
         params = res.params
         ax.plot(
             x_below,
-            params.iloc[0] + params.iloc[1] * x_below,
+            (params.iloc[0] + params.iloc[2])
+            + (params.iloc[1] + params.iloc[3]) * (x_below - cutoff),
             color=colors[c],
             linewidth=0.7,
         )
         ax.plot(
-                    x_above,
-                    (params.iloc[0] + params.iloc[2])
-                    + (params.iloc[1] + params.iloc[3]) * x_above,
-                    color=colors[c],
-                    linewidth=0.7,
-                    label=labels[c]
-                    + r" ($\^τ$: "
-                    + str(round(params.iloc[2], 3))
-                    + "("
-                    + "{:.2f}".format(round(res.pvalues.iloc[2], 2))
-                    + "))",
-                )
-        c=c+1
+            x_above,
+            params.iloc[0] + params.iloc[1] * (x_above - cutoff),
+            color=colors[c],
+            linewidth=0.7,
+            label=labels[c]
+            + r" ($\^τ$: "
+            + "{:.3f}".format(round(params.iloc[2], 3))
+            + "("
+            + "{:.2f}".format(round(res.pvalues.iloc[2], 2))
+            + "))",
+        )
+        c = c + 1
     ax.legend()
 
     fig.savefig("images/application/figureApplication.png")

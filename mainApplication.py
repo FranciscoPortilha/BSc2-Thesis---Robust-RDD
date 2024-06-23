@@ -6,7 +6,9 @@ from src.exports import plotApplicationFigure
 import rdrobust
 
 sample = pd.read_csv("application/dataTransformed.csv")
-plotApplicationFigure(sample,cutoff=0)
+
+print(sample)
+plotApplicationFigure(sample,cutoff=1500)
 
 
 
