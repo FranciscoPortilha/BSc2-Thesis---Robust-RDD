@@ -142,7 +142,7 @@ def plotSamplesComparison(
             for model in models:
                 # Fit model
                 res = jointFitRD(model, samples[i], cutoff, b)
-                #print(res.summary())
+                # print(res.summary())
                 params = res.params
 
                 # Plot regression below cutoff
@@ -209,8 +209,8 @@ def plotPowerFunctionComparison(taus, rejectionRates, saveFig=False, figPath="")
                 linewidth=0.8,
             )
         axs[v][h].plot(taus, 0.05 + np.zeros_like(taus), color="r", linewidth=0.6)
-        axs[v][h].set_xlim([-2.25,2.25])
-        axs[v][h].set_ylim([-0.05,1.05])
+        axs[v][h].set_xlim([-2.25, 2.25])
+        axs[v][h].set_ylim([-0.05, 1.05])
         # Add axis labels and title
         axs[v][h].set_ylabel("rejection rate")
         axs[v][h].set_xlabel("$τ$")
@@ -341,3 +341,43 @@ def plotAsymptoticComparison(tau, asymptotics, saveFig=False, figPath=""):
             plt.close()
         else:
             return fig
+
+
+def plotApplicationFigure(sample, cutoff=1500, b=85, d=3.1):
+    models = ["OLS", "Robust Huber", "Robust Tukey", "Donut"]
+    labels = ["OLS", "Huber", "Tukey", "Donut"]
+    colors = ["darkorange", "royalblue", "mediumseagreen", "mediumorchid"]
+    fig = plt.figure()
+    ax = fig.subplots()
+    ax.scatter(sample.X, sample.Y, s=5)
+    ax.plot()
+
+    x_below = np.linspace(min(sample.X), cutoff, 100)
+    x_above = np.linspace(cutoff, max(sample.X), 100)
+    c = 0
+    for model in models:
+        res = jointFitRD(model, sample, cutoff=cutoff, b=85, outliers=False, donut=d)
+        params = res.params
+        ax.plot(
+            x_below,
+            params.iloc[0] + params.iloc[1] * x_below,
+            color=colors[c],
+            linewidth=0.7,
+        )
+        ax.plot(
+                    x_above,
+                    (params.iloc[0] + params.iloc[2])
+                    + (params.iloc[1] + params.iloc[3]) * x_above,
+                    color=colors[c],
+                    linewidth=0.7,
+                    label=labels[c]
+                    + r" ($\^τ$: "
+                    + str(round(params.iloc[2], 3))
+                    + "("
+                    + "{:.2f}".format(round(res.pvalues.iloc[2], 2))
+                    + "))",
+                )
+        c=c+1
+    ax.legend()
+
+    fig.savefig("images/application/figureApplication.png")

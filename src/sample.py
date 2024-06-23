@@ -52,10 +52,10 @@ def treatment(x,cutoff=0,positive=True):
         else:
             return 1
     else:
-        if x > cutoff:
-            return 0
-        else:
+        if x < cutoff:
             return 1
+        else:
+            return 0
 
 
 def indicator(x):
