@@ -7,12 +7,12 @@ outlierScenarios = (
     2,
     "Outside Right",
     4,
-    "Outside Right",
-    8,
-    "Outside Right",
-    16,
-    "Outside Right",
-    32,
+    "Large Outside Right",
+    2,
+    "Sensitivity Right",
+    64,
+    "Sensitivity Right",
+    100,
 )
 
 np.random.seed(3456)

@@ -410,7 +410,31 @@ def genOutlier(Y, X, name, nOutliers=1, delta=0.1, cutoff=0):
                     j = j + 1
                 else:
                     j = j + 1
-    return Y, Outliers
+
+    # Sensitivity right generates outlier(s) just on the right side of cutoff inside the donut stripe
+    if name == "Sensitivity Right":
+        for j in range(nOutliers):
+            Y = np.append(Y,10)
+            Outliers = np.append(Outliers,1)
+            X = np.append(X,0.05)
+    
+    # Simple Outised generates outlier(s) just outside the right side of the donut stripe
+    if name == "Large Outside Right":
+        i = 0
+        for j in range(nOutliers):
+            notFound = True
+            # Find first observation just outside the stripe and change outcome value to 2.5
+            while notFound & (i < len(X)):
+                if (X[i] <= 2 * delta) & (X[i] > delta):
+                    Y[i] = 20
+                    Outliers[i] = 1
+                    notFound = False
+                    i = i + 1
+                else:
+                    i = i + 1
+            
+
+    return Y, Outliers, X
 
 
 # Generation of the Sample X_i's and Y_i's
@@ -464,7 +488,7 @@ def genSample(
     Y = genY(name, X, tau, L, alpha, beta)
     Outliers = np.zeros_like(Y)
     if outlier == True:
-        Y, Outliers = genOutlier(Y, X, outlierMethod, nOutliers)
+        Y, Outliers, X = genOutlier(Y, X, outlierMethod, nOutliers)
     Tr = genT(X)
 
     # Create sample dataframe
