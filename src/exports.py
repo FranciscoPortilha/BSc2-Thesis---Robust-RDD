@@ -347,9 +347,9 @@ def plotApplicationFigure(sample, cutoff=0, b=85, d=3.1):
     models = ["OLS", "Robust Huber", "Robust Tukey", "Donut"]
     labels = ["OLS", "Huber", "Tukey", "Donut"]
     colors = ["darkorange", "royalblue", "mediumseagreen", "mediumorchid"]
-    fig = plt.figure()
+    fig = plt.figure(figsize=([12,8]))
     ax = fig.subplots()
-    ax.scatter(sample.X, sample.Y, s=5)
+    ax.scatter(sample.X, sample.Y, s=2, c="grey")
     ax.plot()
     x_below = np.linspace(min(sample.X), cutoff, 100)
     x_above = np.linspace(cutoff, max(sample.X), 100)
